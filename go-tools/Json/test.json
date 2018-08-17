@@ -1,0 +1,2978 @@
+{
+    "serviceType": "BCSMGR",
+    "displayName": "BCS Manager",
+    "description": "Blockchain Autonomous Cloud Service Manager VM",
+    "metaVersion": "${project.version}-${build.date}",
+    "abbreviation": "bcsm",
+    "serviceTypeForUrl": "${domain.for.url}",
+    "managedBy": "ANY",
+    "serviceTypeForTas": "${stack.template.name}",
+    "category": "STACKMEMBER",
+    "associatedServices": {
+      "INFRA_WTSS": {
+        "associationType": "USES",
+        "cardinality": "1..1",
+        "description": "Web Tier Security Service association",
+        "displayName": "Web Tier Security Service association",
+        "enableSSHAccess": false,
+        "serviceType": "wtss"
+      }
+    },
+    "meteringFrequencies": {
+      "HOURLY": {
+        "isDefault": true,
+        "description": "Pay for the number of hours used"
+      },
+      "MONTHLY": {}
+    },
+    "serviceLevels": {
+      "PAAS": {
+        "displayName": "Oracle Autonomous Blockchain Cloud Service - Manager VM",
+        "isDefault": true
+      },
+      "BASIC": {}
+    },
+    "editions": {
+      "EE": {
+        "displayName": "Oracle Autonomous Blockchain Cloud Service Manager VM - Enterprise Edition",
+        "description": "Oracle Autonomous Blockchain Cloud Service Manager VM - Enterprise edition",
+        "detailsUrl": "https://cloud.oracle.com/blockchain"
+      }
+    },
+    "versions": {
+      "${product.version.1.0}": {
+        "displayName": "Blockchain Cloud Service Release ${product.version.1.0} - 18.3.1",
+        "description": "Blockchain Cloud Service Release ${product.version.1.0} - 18.3.1, Installed on Oracle Linux 7.5",
+        "releaseVersion": "18.3.1-${product.version.abbrev.1.0}",
+        "components": {
+          "blockchain": {
+            "versions": {
+              "${product.version.1.0}": {}
+            }
+          }
+        }
+      },
+      "${product.version.1.1}": {
+        "displayName": "Blockchain Cloud Service Release ${product.version.1.1} - ${project.version}",
+        "description": "Blockchain Cloud Service Release ${product.version.1.1} - ${project.version}, Installed on Oracle Linux 7.5",
+        "releaseVersion": "${project.version}-${product.version.abbrev.1.1}-${env.RELEASE_VER_11}",
+        "components": {
+          "blockchain": {
+            "versions": {
+              "${product.version.1.1}": {}
+            }
+          }
+        }
+      }
+    },
+    "operations": {
+      "CREATE_SERVICE": {
+        "displayName": "Create Oracle Autonomous Blockchain Cloud Service Manager VM",
+        "description": "Create Oracle Autonomous Blockchain Cloud Service Manager VM",
+        "helpText": "helpText",
+        "serviceParameters": {
+          "serviceName": {
+            "displayName": "Service Name",
+            "description": "This is the unique name used to identify the service in the tenant domain",
+            "helpText": "Choose a name that is unique within the tenant domain that will be used to identify this new service. It should start with a letter and only be composed of low case of letters and digit number of characters.",
+            "isRequired": true,
+            "validationType": "PATTERN",
+            "validPattern": "[a-z][a-z0-9]{1,49}",
+            "validationErrorMessage": "ERROR: Invalid value provided for service name. Service name cannot have more than 50 chars, should start with a letter and only be composed of low case of letters and digit number of characters."
+          },
+          "wtssServiceName": {
+            "associationName": "INFRA_WTSS",
+            "description": "Select an existing Oracle Webtier Security Service which will be used for application security",
+            "displayName": "Webtier Security Service Instance Name",
+            "helpText": "Select an existing Oracle Webtier Security Service which will be used to protect applications deployed on Oracle Java Cloud Service using Oracle Identity Cloud Service",
+            "validationType": "SERVICE"
+          },
+          "vmUser": {
+            "displayName": "The OS admin username",
+            "description": "This is the virtual machine OS user that has root privilege.",
+            "helpText": "The OS user account name that is used for root level access to the virtual machine. This user is configured with 'sudo' rights so all root functions can be performed.  The user name should start with a letter, consist of letters and numbers, and be between 2 to 25 characters.",
+            "isRequired": true,
+            "defaultValue": "opc",
+            "validationType": "PATTERN",
+            "validPattern": "^[a-zA-Z]+[a-zA-Z0-9_]{2,25}",
+            "validationErrorMessage": "VM user name should start with a letter, consist of letters and numbers, and be between 2 to 25 characters."
+          },
+          "isManaged": {
+            "displayName": "Is the service Oracle Managed",
+            "description": "is the service Oracle Managed",
+            "dataType": "BOOLEAN",
+            "defaultValue": false,
+            "isUserVisible": false
+          },
+          "backupDestination": {
+            "displayName": "Backup Destination",
+            "description": "Backup Destination",
+            "helpText": "Backup Destination",
+            "isRequired": false,
+            "validationType": "ENUM",
+            "enumerationName": "backupDestinations",
+            "isUserVisible": false,
+            "defaultValue": "BOTH"
+          },
+          "cloudStorageContainer": {
+            "displayName": "Cloud Storage Container",
+            "description": "The storage container describes the location in the cloud where applications will be backed up to.",
+            "helpText": "Name of an existing Oracle Storage Cloud Service container of the form <storage service name>-<identity domain name>/<container name>. e.g: storagesvc999-useracleaccoutrial00999/backupContainer;If not already created, you must create the container following the Oracle Cloud Storage documentation. ",
+            "isUserVisible": false,
+            "manageValueExpression": "GroovyScript:def provider=\"${SiteConfig.attributes.provider}\";return \"OCIS\".equals(provider)?\"${SiteConfig.attributes.get(\"sm.managed.AUTOBLOCKCHAIN.OCI.storage.container\")}\":\"${SiteConfig.attributes.get(\"sm.managed.AUTOBLOCKCHAIN.storage.container\")}\""
+          },
+          "cloudStorageUser": {
+            "displayName": "Cloud Storage User Name",
+            "description": "Cloud Storage User Name",
+            "isUserVisible": false,
+            "validPattern": "[a-zA-Z0-9@\\.]{2,50}",
+            "validationErrorMessage": "Cloud Storage user name should consist of letters and numbers, and be between 2 to 50 characters.",
+            "manageValueExpression": "GroovyScript:def provider=\"${SiteConfig.attributes.provider}\";return \"OCIS\".equals(provider)?\"${SiteConfig.attributes.get(\"sm.managed.AUTOBLOCKCHAIN.OCI.storage.user\")}\":\"${SiteConfig.attributes.get(\"sm.managed.AUTOBLOCKCHAIN.storage.user\")}\""
+          },
+          "cloudStoragePassword": {
+            "displayName": "Cloud Storage Password",
+            "description": "Cloud Storage password",
+            "isSensitive": true,
+            "isUserVisible": false,
+            "manageValueExpression": "GroovyScript: def provider=\"OCIS\".equals(\"${SiteConfig.attributes.provider}\")?\"OCI_\":\"\"; def site=\"${SiteConfig.computeSiteName}\"; def key=site+\"_AUTOBLOCKCHAIN_\"+provider+\"managed_storage_cred\";return BpUtil.getSMCredential('managed', key);"
+          },
+          "cloudStorageContainerAutoGenerate": {
+            "displayName": "Create Cloud Storage Container",
+            "description": "Create Cloud Storage Container",
+            "dataType": "BOOLEAN",
+            "isUserVisible": false,
+            "defaultValue": false
+          },
+          "ISBMC": {
+            "displayName": "IS BMC",
+            "isUserVisible": false,
+            "manageValueExpression": "GroovyScript: return \"${SiteConfig.attributes.provider}\" == \"OCIS\" ? \"true\" : \"false\""
+          },
+          "mqsPassword": {
+            "description": "MQS password for basic auth",
+            "isSensitive": true,
+            "isUserVisible": false,
+            "manageValueExpression": "GroovyScript: def provider=\"OCIS\".equals(\"${SiteConfig.attributes.provider}\")?\"OCI_\":\"\"; def site=\"${SiteConfig.computeSiteName}\"; def key=site+\"_AUTOBLOCKCHAIN_\"+provider+\"mqs_password\";return BpUtil.getSMCredential('managed', key);"
+          },
+          "mqsClientPassphrase": {
+            "description": "MQS client paasphrase for 2-way tls",
+            "isSensitive": true,
+            "isUserVisible": false,
+            "manageValueExpression": "GroovyScript: def provider=\"OCIS\".equals(\"${SiteConfig.attributes.provider}\")?\"OCI_\":\"\"; def site=\"${SiteConfig.computeSiteName}\"; def key=site+\"_AUTOBLOCKCHAIN_\"+provider+\"mqs_client_passphrase\";return BpUtil.getSMCredential('managed', key);"
+          },
+          "mqsClientCert": {
+            "description": "MQS client cert for 2-way tls",
+            "isSensitive": true,
+            "isUserVisible": false,
+            "manageValueExpression": "GroovyScript: def provider=\"OCIS\".equals(\"${SiteConfig.attributes.provider}\")?\"OCI_\":\"\"; def site=\"${SiteConfig.computeSiteName}\"; def key=site+\"_AUTOBLOCKCHAIN_\"+provider+\"mqs_client_cert\";return BpUtil.getSMCredential('managed', key);"
+          },
+          "mqsClientKey": {
+            "description": "MQS client Key file content for 2-way tls",
+            "isSensitive": true,
+            "isUserVisible": false,
+            "manageValueExpression": "GroovyScript: def provider=\"OCIS\".equals(\"${SiteConfig.attributes.provider}\")?\"OCI_\":\"\"; def site=\"${SiteConfig.computeSiteName}\"; def key=site+\"_AUTOBLOCKCHAIN_\"+provider+\"mqs_client_key\";return BpUtil.getSMCredential('managed', key);"
+          }
+        },
+        "componentParameters": {
+          "blockchain": {
+            "shape": {
+              "displayName": "Compute Shape",
+              "helpText": "The compute shape to use for Blockchain Servers",
+              "description": "The compute shape to use for Blockchain Servers",
+              "dataType": "SHAPE",
+              "isRequired": true,
+              "defaultValue": "GroovyScript: return \"${SiteConfig.attributes.provider}\" == \"OCIS\"? \"${env.MANAGER_VM_SHAPE}\" : \"oc3\"",
+              "isUserVisible": true
+            },
+            "admVMDataVolumeSize": {
+              "displayName": "BCS Admin VM Data Volume Size GB",
+              "description": "The size in Gigabytes of the data storage volume for BCS Admin VM",
+              "isRequired": false,
+              "defaultValue": "12G",
+              "isUserVisible": false
+            },
+            "crcVMDataVolumeSize": {
+              "displayName": "BCS CRC VM Data Volume Size GB",
+              "description": "The size in Gigabytes of the data storage volume for BCS CRC VM",
+              "isRequired": false,
+              "defaultValue": "12G",
+              "isUserVisible": false
+            },
+            "dataVolumeMountPoint": {
+              "displayName": "BCS Data Volume Mount Point",
+              "description": "The mount point of the data storage volume for Oracle Autonomous Blockchain Cloud Service",
+              "dataType": "STRING",
+              "isRequired": false,
+              "defaultValue": "/u01/data",
+              "isUserVisible": false
+            },
+            "admVMOBCSVolumeSize": {
+              "displayName": "BCS Admin VM Application Volume Size GB",
+              "description": "The size in Gigabytes of the application storage volume for BCS Admin VM",
+              "dataType": "STRING",
+              "isRequired": false,
+              "defaultValue": "16G",
+              "isUserVisible": true
+            },
+            "crcVMOBCSVolumeSize": {
+              "displayName": "BCS CRC VM Application Volume Size GB",
+              "description": "The size in Gigabytes of the application storage volume for BCS CRC VM",
+              "dataType": "STRING",
+              "isRequired": false,
+              "defaultValue": "16G",
+              "isUserVisible": true
+            },
+            "obcsVolumeMountPoint": {
+              "displayName": "BCS Application Volume Size Range",
+              "description": "The mount point of the application storage volume for Oracle Autonomous Blockchain Cloud Service",
+              "dataType": "STRING",
+              "isRequired": false,
+              "defaultValue": "/u01/obcs",
+              "isUserVisible": false
+            },
+            "admVMLogVolumeSize": {
+              "displayName": "BCS Admin VM Log Volume Size GB",
+              "description": "The size in Gigabytes of the log storage volume for BCS Admin VM",
+              "dataType": "STRING",
+              "isRequired": false,
+              "defaultValue": "2G",
+              "isUserVisible": false
+            },
+            "crcVMLogVolumeSize": {
+              "displayName": "BCS CRC VM Log Volume Size GB",
+              "description": "The size in Gigabytes of the log storage volume for BCS CRC VM",
+              "dataType": "STRING",
+              "isRequired": false,
+              "defaultValue": "2G",
+              "isUserVisible": false
+            },
+            "logVolumeMountPoint": {
+              "displayName": "BCS Log Volume Mount Point",
+              "description": "The mount point of the log storage volume for Oracle Autonomous Blockchain Cloud Service",
+              "dataType": "STRING",
+              "isRequired": false,
+              "defaultValue": "/u01/log",
+              "isUserVisible": false
+            },
+            "blockchainServerCount": {
+              "displayName": "Number of compute VMs",
+              "description": "Number of compute VMs",
+              "helpText": "Number of Compute, should be between 1 to 10",
+              "isRequired": true,
+              "dataType": "INTEGER",
+              "defaultValue": "1",
+              "validationType": "RANGE",
+              "validRange": "1-10",
+              "isUserVisible": true
+            },
+            "bcsTXCommittedTrans": {
+              "displayName": "Committed Transaction per Hour",
+              "description": "Committed transaction per hour.",
+              "helpText": "Input committed transactions per hour for the service.",
+              "isRequired": true,
+              "dataType": "INTEGER",
+              "defaultValue": "500",
+              "validationType": "RANGE",
+              "validRange": "500-49999",
+              "isUserVisible": true
+            },
+            "bcsTXComputeShape": {
+              "displayName": "BCS TX Compute Shape",
+              "description": "The BCS mode of compute shape defined by input BCS committed TXs.",
+              "helpText": "The BCS mode of compute shape defined by input BCS committed TXs.",
+              "isRequired": true,
+              "validationType": "ENUM",
+              "isUserVisible": true,
+              "defaultValue": "C1",
+              "validValues": {
+                "C1": {
+                  "displayName": "C1 type of BCS compute shape",
+                  "description": "The promised committed transactions per hour is between 500 and 4999. The block storage on VM is 400GB. The compute shape is OC3"
+                },
+                "C2": {
+                  "displayName": "C2 type of BCS compute shape",
+                  "description": "The promised committed transactions per hour is between 5000 and 9999. The block storage on VM is 1000GB. The compute shape is OC4"
+                },
+                "C3": {
+                  "displayName": "C3 type of BCS compute shape",
+                  "description": "The promised committed transactions per hour is between 10000 and 19999. The block storage on VM is 2500GB. The compute shape is OC5"
+                },
+                "C4": {
+                  "displayName": "C4 type of BCS compute shape",
+                  "description": "The promised committed transactions per hour is between 20000 and 49999. The block storage on VM is 10000GB. The compute shape is OC6"
+                }
+              }
+            },
+            "bcsInitialCAInstancesNum": {
+              "displayName": "Initial Number of CA Application Instances",
+              "description": "Initial number of CA application instances",
+              "helpText": "Number of size for initial Blockchain Service CA instances, should be between 2 to 10",
+              "isRequired": true,
+              "dataType": "INTEGER",
+              "isUserVisible": false,
+              "defaultValue": "2",
+              "validationType": "RANGE",
+              "validRange": "1-10",
+              "validLowValue": "1",
+              "validHighValue": "10"
+            },
+            "bcsInitialRESTProxyInstancesNum": {
+              "displayName": "Initial Number of RESTProxy Application Instances",
+              "description": "Initial number of RESTProxy application instances",
+              "helpText": "Number of size for initial Blockchain Service RESTProxy instances, should be between 2 to 10",
+              "isRequired": true,
+              "isUserVisible": false,
+              "dataType": "INTEGER",
+              "defaultValue": "2",
+              "validationType": "RANGE",
+              "validRange": "1-10",
+              "validLowValue": "1",
+              "validHighValue": "10"
+            },
+            "bcsFabricOrdererMode": {
+              "displayName": "BCS Fabric Consensus Mode of Orderer Component",
+              "description": "The consensus mode of orderer application component",
+              "helpText": "The consensus mode of orderer application component.",
+              "isRequired": true,
+              "isUserVisible": true,
+              "validationType": "ENUM",
+              "defaultValue": "solo",
+              "validValues": {
+                "solo": {
+                  "displayName": "SOLO Consensus mode for Orderer Service",
+                  "description": "Solo consensus mode for orderer service. only one orderer application will be provisioned."
+                },
+                "kafka": {
+                  "displayName": "KAFKA Consensus mode for Orderer Service",
+                  "description": "Kafka consensus mode for orderer service."
+                }
+              }
+            },
+            "bcsOrganizationType": {
+              "displayName": "Service Organization Type",
+              "description": "Service Organization Type",
+              "helpText": "The service organization type. FOUNDER deploys BCS orderer application, instead the PARTICIPANT can only deploy BCS peer application",
+              "isRequired": true,
+              "isUserVisible": true,
+              "validationType": "ENUM",
+              "defaultValue": "FOUNDER",
+              "validValues": {
+                "FOUNDER": {
+                  "displayName": "Oracle Block Chain Service - Founder",
+                  "description": "BCS service founder which deploys peer and orderer applications."
+                },
+                "PARTICIPANT": {
+                  "displayName": "Oracle Block Chain Service - Participant",
+                  "description": "BCS service participant which deploys peer applications and can join in other existing organization created by a FOUNDER."
+                }
+              }
+            },
+            "bcsServiceDeployMode": {
+              "displayName": "Service Deployment Mode",
+              "description": "Service deployment and running mode",
+              "helpText": "The service running mode. Development mode and Production mode",
+              "isRequired": true,
+              "isUserVisible": true,
+              "validationType": "ENUM",
+              "defaultValue": "production",
+              "validValues": {
+                "production": {
+                  "displayName": "Oracle Block Chain Service - Production Mode",
+                  "description": "Production mode of BCS service that supports kafa and more complex consensus modes, create separate ACCS chaincode container."
+                },
+                "development": {
+                  "displayName": "Oracle Block Chain Service - Development Mode",
+                  "description": "Development mode of BCS service. It runs chaincode in process space, and only supports solo consensus mode."
+                }
+              }
+            },
+            "bcsPSMAuthMode": {
+              "displayName": "PSM API Authorization Mode",
+              "description": "The authorization mode of accessing to PSM API",
+              "helpText": "The authorization mode of accessing PSM API",
+              "isRequired": false,
+              "isUserVisible": true,
+              "validationType": "ENUM",
+              "defaultValue": "oauth",
+              "validValues": {
+                "oauth": {
+                  "displayName": "OAuth - Access Token Authorization Mode",
+                  "description": "Use access token mode to access and invoke PSM API."
+                },
+                "uauth": {
+                  "displayName": "UAuth - Username/Password Authorization Mode",
+                  "description": "Use basic username/password mode to access and invoke PSM API."
+                }
+              }
+            },
+            "bcsReleaseVersion": {
+              "displayName": "BCS Release Version",
+              "description": "The version of BCS release",
+              "helpText": "The version of BCS release.",
+              "isRequired": false,
+              "isUserVisible": false,
+              "dataType": "STRING",
+              "defaultValue": "${project.version}"
+            },
+            "ordererCount": {
+              "displayName": "Number of Blockchain Cloud Service Orderer components",
+              "description": "Number of Blockchain Cloud Service Orderer components",
+              "helpText": "Number of Blockchain Cloud Service Orderer components, should be between 0 to 4",
+              "isUserVisible": false,
+              "isRequired": false,
+              "dataType": "INTEGER",
+              "defaultValue": "1",
+              "validationType": "RANGE",
+              "validRange": "0-3"
+            },
+            "peerCount": {
+              "displayName": "Number of Blockchian Cloud Service Peer components",
+              "description": "Number of Blockchain Cloud Service Peer components",
+              "helpText": "Number of Blockchain Cloud Service Peer components, should be between 1 to 16",
+              "isRequired": true,
+              "isUserVisible": true,
+              "dataType": "INTEGER",
+              "defaultValue": "4",
+              "validationType": "RANGE",
+              "validRange": "1-16"
+            },
+            "cloudStackName": {
+              "displayName": "Cloud Stack Name",
+              "description": "Cloud stack name",
+              "dataType": "STRING",
+              "isRequired": true,
+              "isUserVisible": true,
+              "defaultValue": "Cloud stack name"
+            },
+            "cloudUser": {
+              "displayName": "Cloud Account User",
+              "description": "Cloud account user",
+              "dataType": "STRING",
+              "isRequired": true,
+              "defaultValue": "Cloud account user"
+            },
+            "cloudPassword": {
+              "displayName": "Cloud Account Password",
+              "description": "Cloud account password",
+              "dataType": "STRING",
+              "isRequired": false,
+              "isUserVisible": false,
+              "isSensitive": true,
+              "defaultValue": "Cloud account password"
+            },
+            "kafkaEndpoint": {
+              "displayName": "Kafka Endpoint",
+              "description": "Kafka endpoint",
+              "dataType": "STRING",
+              "isRequired": false,
+              "isUserVisible": false,
+              "defaultValue": "Kafka endpoint"
+            },
+            "oehpcsName": {
+              "displayName": "OEHPCS Service Name",
+              "description": "OEHPCS service name",
+              "dataType": "STRING",
+              "isRequired": false,
+              "isUserVisible": false,
+              "defaultValue": "OEHPCS service name"
+            },
+            "adminServerCount": {
+              "dataType": "INTEGER",
+              "isUserVisible": false,
+              "defaultValue": "2",
+              "description": "Number of Admin servers",
+              "displayName": "Number of Admin servers",
+              "helpText": "Number of Admin servers, should be between 2 to 20",
+              "validHighValue": "20",
+              "validLowValue": "2",
+              "validRange": "2-20",
+              "validationType": "RANGE"
+            },
+            "crcServerCount": {
+              "dataType": "INTEGER",
+              "isUserVisible": false,
+              "defaultValue": "1",
+              "description": "Number of CRC servers",
+              "displayName": "Number of CRC servers",
+              "helpText": "Number of CRC servers, should be between 1 to 50",
+              "validHighValue": "50",
+              "validLowValue": "1",
+              "validRange": "1-50",
+              "validationType": "RANGE"
+            }
+          }
+        },
+        "validations": {},
+        "actions": {
+          "configureNetwork": {
+            "stage": "POST"
+          }
+        }
+      },
+      "DELETE_SERVICE": {
+        "displayName": "Delete Oracle Autonomous Blockchain Cloud Service - Manager VM",
+        "description": "Delete operation for Oracle Autonomous Blockchain Cloud Service - Manager VM",
+        "serviceParameters": {
+          "force": {
+            "displayName": "Force service deletion",
+            "description": "The service deletion uses the force option and ignores any PaaS script failures.",
+            "helpText": "The service deletion uses the force option and ignores any PaaS script failures.",
+            "defaultValue": false,
+            "dataType": "BOOLEAN"
+          }
+        }
+      },
+      "ADMIN_HOSTS": {
+        "displayName": "Administration of Blockchain service Hosts",
+        "description": "Administration of Blockchain service hosts",
+        "descriptionNLSID": "ADMIN_HOSTS_DESC",
+        "serviceParameters": {
+          "force": {
+            "displayName": "Force stop the Nodes",
+            "description": "This parameter is optional and is used to force the host to be stopped",
+            "helpText": "This parameter is set to 'true' to indicate that we should force Nodes to stopped even if associated Oracle Event Hub Cloud Service instances are present.",
+            "isRequired": false,
+            "defaultValue": true
+          },
+          "allServiceHosts": {
+            "displayName": "Administer All Service Hosts",
+            "description": "Set to 'true' to perform the administration action on all hosts",
+            "helpText": "This parameter is optional and can get set to 'true' to indicates all service hosts should be controlled.",
+            "isRequired": false,
+            "dataType": "BOOLEAN",
+            "defaultValue": false
+          }
+        },
+        "componentParameters": {
+          "blockchain": {
+            "hosts": {
+              "displayName": "Blockchain Nodes to be controlled",
+              "description": "Blockchain Nodes to be controlled",
+              "helpText": "Blockchain Nodes to be controlled",
+              "isRequired": false,
+              "default": "[]",
+              "dataType": "JSON_ARRAY_STR"
+            }
+          }
+        }
+      },
+      "SCALE_OUT_SERVICE": {
+        "displayName": "Scale Out Blockchain Service",
+        "description": "Scale Out operation for Blockchain",
+        "componentParameters": {
+          "blockchain": {
+            "adminServerCount": {
+              "displayName": "Blockchain Admin servers to add",
+              "helpText": "Number of Admin servers, should be between 0 to 20",
+              "dataType": "INTEGER",
+              "defaultValue": "1",
+              "validationType": "RANGE",
+              "validRange": "0-20"
+            },
+            "crcServerCount": {
+              "displayName": "Blockchain CRC servers to add",
+              "helpText": "Number of Blockchain CRC servers, should be between 0 to 50",
+              "isRequired": false,
+              "dataType": "INTEGER",
+              "defaultValue": "0",
+              "validationType": "RANGE",
+              "validRange": "0-50"
+            }
+          }
+        }
+      },
+      "SCALE_IN_SERVICE": {
+        "displayName": "Scale In Blockchain Service",
+        "componentParameters": {
+          "blockchain": {
+            "hosts": {
+              "displayName": "Blockchain VMs to be scaled in",
+              "description": "Blockchain VMs to be scaled in",
+              "helpText": "Blockchain VMs to be scaled in",
+              "isRequired": false,
+              "default": "[]"
+            }
+          }
+        }
+      },
+      "SCALE_HOSTS": {
+        "displayName": "BCS Manager VM Compute Shape",
+        "description": "The compute shape to use for BCS manager VM",
+        "helpText": "New compute shape for the Oracle Autonomous Blockchain Cloud Service manager VM",
+        "componentParameters": {
+          "blockchain": {
+            "shape": {
+              "displayName": "BCS Manager VM Shape",
+              "description": "BCS Manager VM Shape",
+              "dataType": "SHAPE"
+            }
+          }
+        }
+      },
+      "APPLY_PATCH": {},
+      "PRE_CHECK_PATCH": {},
+      "ROLLBACK_PATCH": {},
+      "CHECK_HEALTH": {},
+      "BACKUP_SERVICE": {},
+      "DELETE_BACKUP": {},
+      "RESTORE_SERVICE": {},
+      "UPDATE_BACKUP_CONFIG": {},
+      "ENABLE_LOAD_BALANCER": {},
+      "DISABLE_LOAD_BALANCER": {},
+      "UPDATE_LOAD_BALANCER": {},
+      "ADD_STORAGE": {
+        "displayName": "BCS Service VM Compute Storage Management",
+        "description": "The storage used for service VM.",
+        "helpText": "New storage capacity for the Oracle Autonomous Blockchain Cloud Service VM"
+      }
+    },
+    "actions": {
+      "configureNetwork": {
+        "script": {
+          "scriptPath": "${Service.attributes._tools_root_}/blockchain/service_scripts/utils/configure_network.py",
+          "scriptLocality": "VM",
+          "scriptTimeout": 600,
+          "rexPollInterval": 10000
+        },
+        "scriptParameters": {
+          "tenant": "${Service.identityDomain}",
+          "identityData": "${Service.security.getData('CUSTOMER')}"
+        },
+        "credential": {
+          "credentialName": "${Service.oracleVmSshKeyName}",
+          "scope": "service"
+        }
+      }
+    },
+    "attributes": {
+      "BACKUP_DESTINATION": {
+        "parameterRef": "CREATE_SERVICE.serviceParameters.backupDestination",
+        "isUserVisible": false,
+        "isUserSettable": false
+      },
+      "LOCAL_BACKUP_VOLUME_MOUNT": {
+        "displayName": "Backup Volume Location",
+        "description": "The mount point of the volume on which backup files are stored locally.",
+        "isUserVisible": false,
+        "isUserSettable": false,
+        "valueExpression": "/u01/backup"
+      },
+      "LOCAL_BACKUP_VOLUME_SIZE": {
+        "displayName": "Backup Volume Size",
+        "description": "The size of the volume on which backup files are stored locally.",
+        "isUserVisible": false,
+        "isUserSettable": false,
+        "valueExpression": "2G"
+      },
+      "BLOCKCHAIN_CLOUD_SERVICE_CONSOLE_URL": {
+        "displayName": "Console URL",
+        "description": "The URL to access Blockchain Cloud Service Console",
+        "isUserVisible": true,
+        "isUserSettable": false,
+        "isRequired": false,
+        "dataType": "URL",
+        "valueExpression": "GroovyScript: return \"${Operation.params.CORE.ISBMC}\" == \"true\" ? \"${Service.serviceEndPoints.PUBLIC.serviceUrl}\" : \"${Service.serviceEndPoints.PUBLIC.serviceUrl}/console\""
+      },
+      "MONITORING_ENDPOINT": {
+        "displayName": "EM Monitoring Endpoint",
+        "isUserVisible": false,
+        "isUserSettable": false,
+        "isRequired": false,
+        "dataType": "URL",
+        "valueExpression": "GroovyScript: return \"${Operation.params.CORE.ISBMC}\" == \"true\" ? \"http://${Service.keyComponent.adminVM.mgmtPrivateIpAddress}:8200/console\" : \"${Service.serviceEndPoints.PUBLIC.serviceUrl}/console\""
+      }
+    },
+    "credentials": {
+      "CLOUD_STORAGE_CRED": {
+        "type": "USERPASS",
+        "source": "USER",
+        "isRequired": true,
+        "userName": "${Operation.params.CORE.cloudStorageUser}",
+        "password": "${Operation.params.CORE.cloudStoragePassword}"
+      },
+      "_ORACLE_USER_CRED_": {
+        "type": "SSH",
+        "source": "AUTO",
+        "isRequired": true,
+        "userName": "oracle"
+      },
+      "_OTOOLS_USER_CRED_": {
+        "type": "SSH",
+        "source": "AUTO",
+        "isRequired": true,
+        "userName": "otools"
+      },
+      "_VM_OTOOLS_USER_CRED_": {
+        "type": "SSH",
+        "source": "AUTO",
+        "isRequired": true,
+        "userName": "otools"
+      },
+      "_VM_ORACLE_USER_CRED_": {
+        "type": "SSH",
+        "source": "AUTO",
+        "isRequired": true,
+        "userName": "oracle"
+      }
+    },
+    "SERVICE_TOOLS": {
+      "cloudKey": "bcsm/${project.version}-${product.version.abbrev.1.1}-${env.BIN_VER}/OBCSSCRIPTS.zip",
+      "releaseDate": "${env.RELEASE_DATE_11}",
+      "releaseUri": "http://www.oracle.com/"
+    },
+    "components": {
+      "blockchain": {
+        "component": "blockchain",
+        "abbreviation": "bc",
+        "displayName": "Oracle Autonomous Blockchain Cloud Service Manager VM",
+        "isKeyComponent": true,
+        "versions": {
+          "${product.version.1.0}": {
+            "displayName": "Oracle Autonomous Blockchain Cloud Service ${product.version.1.0} - 18.3.1",
+            "description": "Oracle Autonomous Blockchain Cloud Service ${product.version.1.0} - 18.3.1, Installed on Oracle Linux 7.5",
+            "releaseVersion": "18.3.1-${product.version.abbrev.1.0}-${env.RELEASE_VER_10}",
+            "zipBundles": {
+              "OBCSDISTRIBUTION": {
+                "cloudKey": "bcsm/18.3.1-${product.version.abbrev.1.0}-${env.RELEASE_VER_10}/OBCSDISTRIBUTION.zip",
+                "releaseDate": "${env.RELEASE_DATE_10}",
+                "releaseUri": "http://www.oracle.com/"
+              }
+            }
+          },
+          "${product.version.1.1}": {
+            "displayName": "Oracle Autonomous Blockchain Cloud Service ${product.version.1.1} - ${project.version}",
+            "description": "Oracle Autonomous Blockchain Cloud Service ${product.version.1.1} - ${project.version}, Installed on Oracle Linux 7.5",
+            "releaseVersion": "${project.version}-${product.version.abbrev.1.1}-${env.RELEASE_VER_11}",
+            "zipBundles": {
+              "OBCSDISTRIBUTION": {
+                "cloudKey": "bcsm/${project.version}-${product.version.abbrev.1.1}-${env.BIN_VER}/OBCSDISTRIBUTION.zip",
+                "releaseDate": "${env.RELEASE_DATE_11}",
+                "releaseUri": "http://www.oracle.com/"
+              }
+            }
+          }
+        },
+        "attributes": {
+          "shape": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.shape",
+            "isUserVisible": false
+          },
+          "admVMDataVolumeSize": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.admVMDataVolumeSize",
+            "isUserVisible": false
+          },
+          "crcVMDataVolumeSize": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.crcVMDataVolumeSize",
+            "isUserVisible": false
+          },
+          "dataVolumeMountPoint": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.dataVolumeMountPoint",
+            "isUserVisible": false
+          },
+          "admVMOBCSVolumeSize": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.admVMOBCSVolumeSize",
+            "isUserVisible": false
+          },
+          "crcVMOBCSVolumeSize": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.crcVMOBCSVolumeSize",
+            "isUserVisible": false
+          },
+          "obcsVolumeMountPoint": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.obcsVolumeMountPoint",
+            "isUserVisible": false
+          },
+          "admVMLogVolumeSize": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.admVMLogVolumeSize",
+            "isUserVisible": false
+          },
+          "crcVMLogVolumeSize": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.crcVMLogVolumeSize",
+            "isUserVisible": false
+          },
+          "logVolumeMountPoint": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.logVolumeMountPoint",
+            "isUserVisible": false
+          },
+          "bcsTXCommittedTrans": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.bcsTXCommittedTrans",
+            "isUserVisible": false
+          },
+          "bcsTXComputeShape": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.bcsTXComputeShape",
+            "isUserVisible": false
+          },
+          "bcsInitialCAInstancesNum": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.bcsInitialCAInstancesNum",
+            "isUserVisible": false
+          },
+          "bcsInitialRESTProxyInstancesNum": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.bcsInitialRESTProxyInstancesNum",
+            "isUserVisible": false
+          },
+          "bcsFabricOrdererMode": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.bcsFabricOrdererMode",
+            "isUserVisible": false
+          },
+          "bcsOrganizationType": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.bcsOrganizationType",
+            "isUserVisible": false
+          },
+          "bcsPSMAuthMode": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.bcsPSMAuthMode",
+            "isUserVisible": false
+          },
+          "bcsReleaseVersion": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.bcsReleaseVersion",
+            "isUserVisible": false
+          },
+          "bcsServiceDeployMode": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.bcsServiceDeployMode",
+            "isUserVisible": false
+          },
+          "ORDERER_COUNT": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.ordererCount",
+            "isUserVisible": false
+          },
+          "PEER_COUNT": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.peerCount",
+            "isUserVisible": false
+          },
+          "cloudServiceURL": {
+            "dataType": "STRING",
+            "isUserVisible": false,
+            "valueExpression": "GroovyScript:return \"${Account.PSMPublicURL.replaceAll(/\\/$/,'')}\""
+          },
+          "cloudStackName": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.cloudStackName",
+            "isUserVisible": false
+          },
+          "cloudUser": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.cloudUser",
+            "isUserVisible": false
+          },
+          "kafkaEndpoint": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.kafkaEndpoint",
+            "isUserVisible": false
+          },
+          "oehpcsName": {
+            "parameterRef": "CREATE_SERVICE.componentParameters.blockchain.oehpcsName",
+            "isUserVisible": false
+          },
+          "ossContainer": {
+            "parameterRef": "CREATE_SERVICE.serviceParameters.cloudStorageContainer",
+            "isUserVisible": false
+          },
+          "ossUser": {
+            "parameterRef": "CREATE_SERVICE.serviceParameters.cloudStorageUser",
+            "isUserVisible": false
+          }
+        },
+        "credentials": {
+          "CLOUD_USER_CRED": {
+            "type": "USERPASS",
+            "source": "USER",
+            "isRequired": true,
+            "userName": "${Service.serviceComponents.blockchain.attributes.cloudUser}",
+            "password": "${Operation.params.blockchain.cloudPassword}"
+          },
+          "STORAGE_USER_CRED": {
+            "type": "USERPASS",
+            "source": "USER",
+            "isRequired": true,
+            "userName": "${Operation.params.CORE.cloudStorageUser}",
+            "password": "${Operation.params.CORE.cloudStoragePassword}"
+          },
+          "MQS_CLIENT_KEY": {
+            "type": "BINARY",
+            "source": "USER",
+            "isRequired": true,
+            "data": "${Operation.params.CORE.mqsClientKey}"
+          },
+          "MQS_CLIENT_PASSPHRASE": {
+            "type": "USERPASS",
+            "source": "USER",
+            "isRequired": true,
+            "userName": "sm",
+            "password": "${Operation.params.CORE.mqsClientPassphrase}"
+          },
+          "MQS_CLIENT_CERT": {
+            "type": "BINARY",
+            "source": "USER",
+            "isRequired": true,
+            "data": "${Operation.params.CORE.mqsClientCert}"
+          },
+          "MQS_PASSWORD": {
+            "type": "USERPASS",
+            "source": "USER",
+            "isRequired": true,
+            "userName": "sm",
+            "password": "${Operation.params.CORE.mqsPassword}"
+          }
+        },
+        "iaasResources": {
+          "vmResources": {
+            "shapes": {
+              "VM.Standard1.1": {},
+              "VM.Standard1.2": {},
+              "VM.Standard1.4": {},
+              "VM.Standard1.8": {},
+              "VM.Standard1.16": {},
+              "VM.Standard2.1": {},
+              "VM.Standard2.4": {},
+              "oc3": {},
+              "oc4": {},
+              "oc5": {},
+              "oc6": {},
+              "oc7": {}
+            },
+            "storageVolumes": {},
+            "machineImage": {
+              "ALL_VERSIONS_AND_EDITIONS": {
+                "value": "${IaaSProvider.imagelists.BCS}"
+              }
+            },
+            "vmTypes": {
+              "ADMIN_SERVER": {
+                "cardinality": "1..*",
+                "role": "ADMIN",
+                "shape": "${Service.serviceComponents.blockchain.attributes.shape}",
+                "storageVolumes": {
+                  "boot": {
+                    "mount": "/",
+                    "size": "${env.ADMVM_BOOT_VOLUME_SIZE}",
+                    "properties": [
+                      "${IaaSProvider.storageProperties.default}"
+                    ],
+                    "boot": "true"
+                  },
+                  "data": {
+                    "mount": "${Service.serviceComponents.blockchain.attributes.dataVolumeMountPoint}",
+                    "size": "${Service.serviceComponents.blockchain.attributes.admVMDataVolumeSize}",
+                    "properties": [
+                      "${IaaSProvider.storageProperties.default}"
+                    ],
+                    "isUserVisible": true,
+                    "isRequired": true,
+                    "isUpdateable": true,
+                    "validRange": "16-2048",
+                    "displayName": "Container Application Storage",
+                    "description": "The data volume contains container application and data",
+                    "helpText": "The data volume is used to host the container application and data. You must include at least one volume parameter in your request."
+                  },
+                  "obcs": {
+                    "mount": "${Service.serviceComponents.blockchain.attributes.obcsVolumeMountPoint}",
+                    "size": "${Service.serviceComponents.blockchain.attributes.admVMOBCSVolumeSize}",
+                    "properties": [
+                      "${IaaSProvider.storageProperties.default}"
+                    ],
+                    "isUserVisible": true,
+                    "isRequired": true,
+                    "isUpdateable": true,
+                    "validRange": "16-2048",
+                    "displayName": "Application Storage",
+                    "description": "The data volume contains BCS application and data",
+                    "helpText": "The data volume is used to host the BCS application and data. You must include at least one volume parameter in your request."
+                  },
+                  "log": {
+                    "mount": "${Service.serviceComponents.blockchain.attributes.logVolumeMountPoint}",
+                    "size": "${Service.serviceComponents.blockchain.attributes.admVMLogVolumeSize}",
+                    "properties": [
+                      "${IaaSProvider.storageProperties.default}"
+                    ],
+                    "isUserVisible": true,
+                    "isRequired": true,
+                    "isUpdateable": true,
+                    "validRange": "2-256",
+                    "displayName": "Application Log",
+                    "description": "The data volume contains BCS application log data",
+                    "helpText": "The data volume is used to host the BCS application log data. You must include at least one volume parameter in your request."
+                  },
+                  "backup": {
+                    "mount": "/u01/backup/",
+                    "size": "${env.ADMVM_BAK_VOLUME_SIZE}",
+                    "criteria": "${Service.level == 'PAAS'}"
+                  }
+                }
+              },
+              "CRC_SERVER_TYPE": {
+                "cardinality": "1..*",
+                "role": "NODE",
+                "shape": "${Service.serviceComponents.blockchain.attributes.shape}",
+                "storageVolumes": {
+                  "boot": {
+                    "mount": "/",
+                    "size": "${env.CRCVM_BOOT_VOLUME_SIZE}",
+                    "properties": [
+                      "${IaaSProvider.storageProperties.default}"
+                    ],
+                    "boot": "true"
+                  },
+                  "log": {
+                    "mount": "${Service.serviceComponents.blockchain.attributes.logVolumeMountPoint}",
+                    "size": "${Service.serviceComponents.blockchain.attributes.crcVMLogVolumeSize}",
+                    "properties": [
+                      "${IaaSProvider.storageProperties.default}"
+                    ],
+                    "isUserVisible": true,
+                    "isRequired": true,
+                    "isUpdateable": true,
+                    "validRange": "2-256",
+                    "displayName": "Application Log",
+                    "description": "The data volume contains BCS application log data",
+                    "helpText": "The data volume is used to host the BCS application log data. You must include at least one volume parameter in your request."
+                  },
+                  "data": {
+                    "mount": "${Service.serviceComponents.blockchain.attributes.dataVolumeMountPoint}",
+                    "size": "${Service.serviceComponents.blockchain.attributes.crcVMDataVolumeSize}",
+                    "properties": [
+                      "${IaaSProvider.storageProperties.default}"
+                    ],
+                    "isUserVisible": true,
+                    "isRequired": true,
+                    "isUpdateable": true,
+                    "validRange": "16-2048",
+                    "displayName": "Container Application Storage",
+                    "description": "The data volume contains container application and data",
+                    "helpText": "The data volume is used to host the container application and data. You must include at least one volume parameter in your request."
+                  },
+                  "obcs": {
+                    "mount": "${Service.serviceComponents.blockchain.attributes.obcsVolumeMountPoint}",
+                    "size": "${Service.serviceComponents.blockchain.attributes.crcVMOBCSVolumeSize}",
+                    "properties": [
+                      "${IaaSProvider.storageProperties.default}"
+                    ],
+                    "isUserVisible": true,
+                    "isRequired": true,
+                    "isUpdateable": true,
+                    "validRange": "16-2048",
+                    "displayName": "Application Storage",
+                    "description": "The data volume contains BCS application and data",
+                    "helpText": "The data volume is used to host the BCS application and data. You must include at least one volume parameter in your request."
+                  }
+                }
+              }
+            },
+            "bootstrapAttributes": {
+              "em_monitoring_port": "8200",
+              "userdata": {
+                "bcs_app_orderer_count": "${Service.serviceComponents.blockchain.attributes.ORDERER_COUNT}",
+                "bcs_app_peer_count": "${Service.serviceComponents.blockchain.attributes.PEER_COUNT}",
+                "bcs_cloud_serviceurl": "${Service.serviceComponents.blockchain.attributes.cloudServiceURL}",
+                "bcs_cloud_stackname": "${Service.serviceComponents.blockchain.attributes.cloudStackName}",
+                "bcs_cloud_user": "${Service.serviceComponents.blockchain.attributes.cloudUser}",
+                "bcs_consensus_type": "${Service.serviceComponents.blockchain.attributes.bcsFabricOrdererMode}",
+                "bcs_is_bmc": "GroovyScript: return \"${SiteConfig.attributes.provider}\" == \"OCIS\"? \"true\" : \"${SMConfig.'sm.managed.bcssvc.ossapi.invert'}\" == \"true\" ? \"true\" : \"false\"",
+                "bcs_oauth_client_id": "${Service.getSecurity().getOAuthClientID('CUSTOMER')}",
+                "bcs_oauth_provider_host": "${Service.security.providerHost}",
+                "bcs_oauth_provider_port": "${Service.security.providerPort}",
+                "bcs_oauth_provider_protocol": "${Service.security.providerProtocol}",
+                "bcs_organization_type": "${Service.serviceComponents.blockchain.attributes.bcsOrganizationType}",
+                "bcs_oss_container": "${Service.serviceComponents.blockchain.attributes.ossContainer}",
+                "bcs_oss_user": "${Service.serviceComponents.blockchain.attributes.ossUser}",
+                "bcs_psmapi_auth_mode": "${Service.serviceComponents.blockchain.attributes.bcsPSMAuthMode}",
+                "bcs_service_deploymode": "${Service.serviceComponents.blockchain.attributes.bcsServiceDeployMode}",
+                "bcs_tas_accountid": "${Account.tasAccountId}",
+                "mqsDataCenter": "GroovyScript: ${SMConfig.'bcs.mqs.datacenter' == null} ? \"unset\" : \"${SMConfig.'bcs.mqs.datacenter'}\"",
+                "mqsServiceUrl": "GroovyScript: ${SMConfig.'bcs.mqs.serviceurl' == null} ? \"unset\" : \"${SMConfig.'bcs.mqs.serviceurl'}\"",
+                "availabilityDomain": "${Operation.params.CORE.availabilityDomain}",
+                "region": "${Operation.params.CORE.region}",
+                "tasServiceEntitlementId": "${Account.serviceEntitlementId}"
+              }
+            }
+          },
+          "networkResources": {
+            "networkPorts": {
+              "ssh": {
+                "description": "Permit ssh access to nodes",
+                "port": "22"
+              },
+              "orderer_public": {
+                "description": "Permit public access to orderer component",
+                "port": "7301-7320",
+                "type": "tcp"
+              },
+              "orderer_service": {
+                "description": "Permit service access to orderer component",
+                "port": "7321-7350",
+                "type": "tcp"
+              },
+              "peer_public": {
+                "description": "Permit public access to peer component",
+                "port": "7100-7150",
+                "type": "tcp"
+              },
+              "peer_service": {
+                "description": "Permit service access to peer component",
+                "port": "7151-7200",
+                "type": "tcp"
+              }
+            }
+          }
+        },
+        "paasResources": {
+          "serverTypes": {
+            "BLOCKCHAIN_SERVER": {
+              "isComposite": "false",
+              "cardinality": "1..*",
+              "count": "${Operation.params.blockchain.adminServerCount}",
+              "vmTypes": {
+                "ADMIN_SERVER": {}
+              },
+              "keyTransfer": {
+                "credentials_file": "/tmp/credentials_BLOCKCHAIN_SERVER",
+                "credential_tmp": "/tmp/credentials_tmp",
+                "credentials_format": "SHELL",
+                "semaphore_file": "/tmp/credentials.sem_BLOCKCHAIN_SERVER",
+                "keys": [
+                  {
+                    "keyValue": "${Service.oracleVmSshKeyName}",
+                    "target": "${Service.serviceComponents.blockchain.userHomes}/oracle/.ssh/id_rsa"
+                  },
+                  {
+                    "keyValue": "${Service.otoolsVmSshKeyName}",
+                    "target": "${Service.serviceComponents.blockchain.userHomes}/otools/.ssh/id_rsa"
+                  }
+                ],
+                "credentials": [
+                  {
+                    "value": "${Service.credentials._LOG_INFRA_CRED_.password}",
+                    "key": "LOGINFRA_STORAGE_TEMPURL",
+                    "encrypt": "${Service.oracleVmSshKeyName}",
+                    "credentials_format": "SHELL",
+                    "target": "/tmp/credentials_loginfra"
+                  },
+                  {
+                    "value": "${Service.credentials.PSM_PROVIDER_OAUTH_CLIENT_SECRET.password}",
+                    "key": "IDCS_PROVIDER_OAUTH_CLIENT_SECRET",
+                    "encrypt": "${Service.oracleVmSshKeyName}",
+                    "credentials_format": "SHELL",
+                    "target": "/tmp/credentials_idcs_provider"
+                  },
+                  {
+                    "value": "${Service.credentials.PSM_CUSTOMER_OAUTH_CLIENT_SECRET.password}",
+                    "key": "IDCS_CUSTOMER_OAUTH_CLIENT_SECRET",
+                    "encrypt": "${Service.oracleVmSshKeyName}",
+                    "credentials_format": "SHELL",
+                    "target": "/tmp/credentials_idcs_customer"
+                  },
+                  {
+                    "value": "${Service.credentials.PSM_CUSTOMER_OAUTH_CLIENT_SECRET.password}",
+                    "key": "BCS_OAUTH_CLIENT_SECRET",
+                    "encrypt": "${Service.oracleVmSshKeyName}"
+                  },
+                  {
+                    "value": "${Service.credentials.STORAGE_USER_CRED.password}",
+                    "key": "STORAGE_PASSWORD",
+                    "encrypt": "${Service.oracleVmSshKeyName}"
+                  },
+                  {
+                    "value": "${Service.credentials.MQS_PASSWORD.password}",
+                    "key": "BCS_MQS_PASSWORD",
+                    "encrypt": "${Service.oracleVmSshKeyName}"
+                  },
+                  {
+                    "data": "${Service.credentials.MQS_CLIENT_CERT.data}",
+                    "key": "MQS_CLIENT_CERT",
+                    "target": "/tmp"
+                  },
+                  {
+                    "data": "${Service.credentials.MQS_CLIENT_KEY.data}",
+                    "key": "MQS_CLIENT_KEY",
+                    "target": "/tmp"
+                  },
+                  {
+                    "value": "${Service.credentials.MQS_CLIENT_PASSPHRASE.password}",
+                    "key": "MQS_CLIENT_PASSPHRASE",
+                    "encrypt": "${Service.oracleVmSshKeyName}"
+                  }
+                ]
+              },
+              "attributes": {}
+            },
+            "CRC_SERVER": {
+              "isComposite": "false",
+              "cardinality": "1..*",
+              "count": "${Operation.params.blockchain.crcServerCount}",
+              "vmTypes": {
+                "CRC_SERVER_TYPE": {}
+              },
+              "keyTransfer": {
+                "credentials_file": "/tmp/credentials_BLOCKCHAIN_SERVER",
+                "credential_tmp": "/tmp/credentials_tmp",
+                "credentials_format": "SHELL",
+                "semaphore_file": "/tmp/credentials.sem_BLOCKCHAIN_SERVER",
+                "keys": [
+                  {
+                    "keyValue": "${Service.oracleVmSshKeyName}",
+                    "target": "${Service.serviceComponents.blockchain.userHomes}/oracle/.ssh/id_rsa"
+                  },
+                  {
+                    "keyValue": "${Service.otoolsVmSshKeyName}",
+                    "target": "${Service.serviceComponents.blockchain.userHomes}/otools/.ssh/id_rsa"
+                  }
+                ],
+                "credentials": [
+                  {
+                    "value": "${Service.credentials.PSM_CUSTOMER_OAUTH_CLIENT_SECRET.password}",
+                    "key": "BCS_OAUTH_CLIENT_SECRET",
+                    "encrypt": "${Service.oracleVmSshKeyName}"
+                  },
+                  {
+                    "value": "${Service.credentials.STORAGE_USER_CRED.password}",
+                    "key": "STORAGE_PASSWORD",
+                    "encrypt": "${Service.oracleVmSshKeyName}"
+                  }
+                ]
+              },
+              "attributes": {}
+            }
+          },
+          "provisioningCheck": {
+            "script": "/service_scripts/provisioning_check/check_provisioning_status_rex.py",
+            "options": {
+              "timeout": 1500
+            }
+          },
+          "reachabilityCheck": {
+            "script": "/service_scripts/reachability_check/reachability_check_rex.py",
+            "options": {
+              "timeout": 3600,
+              "sudo": true
+            }
+          },
+          "addStorage": {
+            "script": "/service_scripts/scaling/add_storage.py",
+            "options": {
+              "timeout": 1200,
+              "sudo": true
+            }
+          },
+          "addStorageVolume": {
+            "script": "/service_scripts/scaling/add_storagevolume.py",
+            "options": {
+              "timeout": 1200,
+              "sudo": true
+            }
+          },
+          "preScaleHosts": {
+            "script": "/service_scripts/scaling/stop_vm.py"
+          },
+          "postScaleHosts": {
+            "script": "/service_scripts/scaling/start_vm.py"
+          },
+          "preDelete": {
+            "script": "/service_scripts/delete/preDelete.py",
+            "options": {
+              "timeout": 3600
+            }
+          },
+          "scaleOut": {
+            "script": "/service_scripts/scaling/scale_out_rex.py"
+          },
+          "scaleIn": {
+            "script": "/service_scripts/scaling/scale_in_rex.py"
+          }
+        },
+        "emMonitoring": {
+          "emNotifyTasks": {
+            "criteria": true,
+            "discovery": {
+              "bcsRemoteHost": {
+                "properties": {
+                  "EM_DISCOVERY_IP": "GroovyScript: def isOcisProvider=${SiteConfig.attributes.provider.equals(\"OCIS\")}; if (isOcisProvider==true) return \"MGMT_PRIVATE_IP_ADDRESS\"; else return \"IP_ADDRESS\"",
+                  "REMOTE_CACHE_ROOT": "/u01/app/oracle/tools/home/otools/cacheRoot",
+                  "REMOTE_CACHE_SBIN_ROOT": "/u01/app/oracle/tools/home/otools/sbinRoot",
+                  "SUDO_PATH": "/usr/bin/sudo",
+                  "TARGET_TYPE": "test_remote_host",
+                  "TASK_TYPE": "ADD_REMOTE_HOST"
+                },
+                "securedProperties": {}
+              },
+              "bcsCloudSvc": {
+                "properties": {
+                  "TASK_TYPE": "ADD_CLOUD_SERVICE_TARGET",
+                  "TARGET_TYPE": "oracle_obcs_service",
+                  "TARGET_NAME": "${Service.name}",
+                  "TARGET_HOST": "GroovyScript: boolean isOCI = '${SiteConfig.attributes.provider}' == 'OCIS';\nif (isOCI) {\n    return '${Service.keyComponent.adminVM.mgmtPrivateIpAddress}'\n}\nreturn '${Service.keyComponent.adminVM.publicIpAddress}'",
+                  "TARGET_CRED_TYPE": "AliasCredential",
+                  "TARGET_CRED_SET_NAME": "UserCredentialSet",
+                  "TARGET_CRED_USER": "${Service.security.getData('CUSTOMER')['AppIDs']['OBCS_MONITOR_APPID'].name}",
+                  "TARGET_CRED_USER_KEY": "Alias",
+                  "TARGET_CRED_PWD_KEY": "Password",
+                  "TARGET_INSTANCE_PROPERTIES": {
+                    "MonitoringURI": "${Service.attributes.MONITORING_ENDPOINT}"
+                  },
+                  "TARGET_DERIVED_PROPERTIES": "",
+                  "TARGET_DEPT": "",
+                  "TARGET_LOB": ""
+                },
+                "securedProperties": {
+                  "TARGET_CRED_PWD": "${Service.credentials.PSM_APPID_CUSTOMER_OBCS_MONITOR_APPID.password}"
+                }
+              },
+              "bcsCloudPod": {
+                "properties": {
+                  "TARGET_HOST": "GroovyScript: boolean isOCI = '${SiteConfig.attributes.provider}' == 'OCIS';\nif (isOCI) {\n    return '${Service.keyComponent.adminVM.mgmtPrivateIpAddress}'\n}\nreturn '${Service.keyComponent.adminVM.publicIpAddress}'",
+                  "TASK_TYPE":"ADD_POD_TARGET",
+                  "TARGET_NAME": "${Service.name}_pod",
+                  "TARGET_TYPE": "oracle_obcs_pod",
+                  "ASSOC_TYPE": "app_composite_contains"
+                },
+                "securedProperties": {}
+              },
+              "ServicePodAssociation": {
+                 "properties": {
+                   "TASK_TYPE":"ADD_ASSOCIATION",
+                   "TARGET_TYPE": "BlockchainAssociation",
+                   "ASSOC_TYPE": "provided_by",
+                   "ASSOC_SOURCE_TARGET_NAME": "${Service.name}",
+                   "ASSOC_SOURCE_TARGET_TYPE": "oracle_obcs_service",
+                   "ASSOC_DEST_TARGET_NAME": "blockchain_${Service.name}_pod",
+                   "ASSOC_DEST_TARGET_TYPE": "oracle_obcs_pod"
+                  },
+                 "securedProperties": {}
+              }
+            }
+          },
+          "serviceMapping": {}
+        },
+        "health": {
+          "healthIndicators": {
+            "Status": {
+              "unit": "ms",
+              "type": "TIME",
+              "resourceType": "VM",
+              "description": "Evaluate status",
+              "collectorDetails": "StatusCollector"
+            },
+            "CpuUtil": {
+              "unit": "%",
+              "type": "CPU",
+              "resourceType": "VM",
+              "description": "Cpu Utilization Percent",
+              "collectorDetails": "cpuUtilCollector"
+            }
+          }
+        },
+        "logs": {
+          "script": "/service_scripts/log_infra/logging_config_gen_service.py"
+        }
+      }
+    },
+    "iaasResources": {
+      "iaasProvider": {
+        "opc": {
+          "images": {
+            "BCS": "OL_7.2_UEKR4_x86_64-BCS-033018"
+          }
+        },
+        "bmc": {
+          "images": {
+            "BCS": "BCS-PSM-1.5.03-OEL7u5_18.2.6"
+          }
+        },
+        "ALL": {
+          "storageProperties": {
+            "default": "/oracle/public/storage/default",
+            "latency": "/oracle/public/storage/latency"
+          }
+        }
+      },
+      "networkResources": {
+        "networkPorts": {
+          "ssh": {
+            "description": "Permit ssh access to Nodes",
+            "port": "22",
+            "type": "tcp"
+          }
+        },
+        "networkRules": {}
+      },
+      "meteringTags": {
+        "1": {
+          "resourceTypes": [
+            "eip"
+          ],
+          "usageSource": [
+            "OBCS_EE_PAAS_ANY_TRANSACTIONS_HOUR"
+          ]
+        }
+      }
+    },
+    "backupRestore": {
+      "backupRestoreOperations": {
+        "backup": {
+          "script": "/service_scripts/python/backup/backup.py"
+        },
+        "restore-pre-check": {
+          "script": "/service_scripts/python/backup/restore_precheck.py"
+        },
+        "restore": {
+          "script": "/service_scripts/python/backup/restore.py"
+        },
+        "delete": {
+          "script": "/service_scripts/python/backup/delete.py"
+        }
+      }
+    },
+    "UICustomizations": {
+      "CREATE_SERVICE": {
+        "details": {
+          "pageTitle": "Service Details",
+          "pageDescription": "Provide details for this Blockchain Cloud Service instance.",
+          "sections": [
+            {
+              "header": "serviceSpecificConfiguration",
+              "displayName": "Blockchain Cloud Service Configuration",
+              "parameters": [
+                {
+                  "name": "operations.CREATE_SERVICE.componentParameters.blockchain.shape",
+                  "value": "operations.CREATE_SERVICE.componentParameters.blockchain.shape",
+                  "UIComponent": "selectOneChoice"
+                },
+                {
+                  "name": "operations.CREATE_SERVICE.componentParameters.blockchain.peerCount",
+                  "value": "operations.CREATE_SERVICE.componentParameters.blockchain.peerCount",
+                  "UIComponent": "inputText"
+                },
+                {
+                  "name": "operations.CREATE_SERVICE.componentParameters.blockchain.ordererCount",
+                  "value": "operations.CREATE_SERVICE.componentParameters.blockchain.ordererCount",
+                  "UIComponent": "inputText"
+                },
+                {
+                  "name": "operations.CREATE_SERVICE.componentParameters.blockchain.bcsFabricOrdererMode",
+                  "value": "operations.CREATE_SERVICE.componentParameters.blockchain.bcsFabricOrdererMode",
+                  "UIComponent": "selectOneChoice"
+                },
+                {
+                  "name": "operations.CREATE_SERVICE.componentParameters.blockchain.bcsOrganizationType",
+                  "value": "operations.CREATE_SERVICE.componentParameters.blockchain.bcsOrganizationType",
+                  "UIComponent": "selectOneChoice",
+                  "refreshFields": "operations.CREATE_SERVICE.componentParameters.blockchain.shape"
+                },
+                {
+                  "name": "operations.CREATE_SERVICE.componentParameters.blockchain.bcsServiceDeployMode",
+                  "value": "operations.CREATE_SERVICE.componentParameters.blockchain.bcsServiceDeployMode",
+                  "UIComponent": "selectOneChoice",
+                  "refreshFields": "operations.CREATE_SERVICE.componentParameters.blockchain.shape"
+                },
+                {
+                  "name": "operations.CREATE_SERVICE.componentParameters.blockchain.bcsPSMAuthMode",
+                  "value": "operations.CREATE_SERVICE.componentParameters.blockchain.bcsPSMAuthMode",
+                  "UIComponent": "selectOneChoice"
+                }
+              ]
+            },
+            {
+              "header": "cloudManagementSpecificConfiguration",
+              "displayName": "Blockchain Cloud Service Management Configuration",
+              "parameters": [
+                {
+                  "name": "operations.CREATE_SERVICE.componentParameters.blockchain.cloudUser",
+                  "value": "operations.CREATE_SERVICE.componentParameters.blockchain.cloudUser",
+                  "UIComponent": "inputText"
+                },
+                {
+                  "name": "operations.CREATE_SERVICE.componentParameters.blockchain.cloudPassword",
+                  "value": "operations.CREATE_SERVICE.componentParameters.blockchain.cloudPassword",
+                  "UIComponent": "inputText",
+                  "isConfirmationRequired": "true",
+                  "confirmationErrorMessage": "Passwords do not match.",
+                  "isSecret": "true"
+                }
+              ]
+            },
+            {
+              "header": "bcsInstanceSpecificConfiguration",
+              "displayName": "Blockchain Cloud Service References",
+              "parameters": [
+                {
+                  "name": "operations.CREATE_SERVICE.componentParameters.blockchain.cloudStackName",
+                  "value": "operations.CREATE_SERVICE.componentParameters.blockchain.cloudStackName",
+                  "UIComponent": "inputText"
+                }
+              ]
+            }
+          ]
+        },
+        "confirmation": {
+          "pageTitle": "Confirmation",
+          "pageDescription": "Confirm your responses and create this Blockchain Cloud Service instance.",
+          "sections": [
+            {
+              "header": "serviceSpecificConfiguration",
+              "displayName": "Blockchain Cloud Configuration",
+              "parameters": [
+                {
+                  "name": "operations.CREATE_SERVICE.serviceParameters.edition",
+                  "value": "operations.CREATE_SERVICE.serviceParameters.edition",
+                  "UIComponent": "outputText"
+                },
+                {
+                  "name": "operations.CREATE_SERVICE.componentParameters.blockchain.shape",
+                  "value": "operations.CREATE_SERVICE.componentParameters.blockchain.shape",
+                  "UIComponent": "outputText"
+                },
+                {
+                  "name": "operations.CREATE_SERVICE.componentParameters.blockchain.peerCount",
+                  "value": "operations.CREATE_SERVICE.componentParameters.blockchain.peerCount",
+                  "UIComponent": "outputText"
+                },
+                {
+                  "name": "operations.CREATE_SERVICE.componentParameters.blockchain.ordererCount",
+                  "value": "operations.CREATE_SERVICE.componentParameters.blockchain.ordererCount",
+                  "UIComponent": "outputText"
+                },
+                {
+                  "name": "operations.CREATE_SERVICE.componentParameters.blockchain.bcsFabricOrdererMode",
+                  "value": "operations.CREATE_SERVICE.componentParameters.blockchain.bcsFabricOrdererMode",
+                  "UIComponent": "outputText"
+                },
+                {
+                  "name": "operations.CREATE_SERVICE.componentParameters.blockchain.bcsOrganizationType",
+                  "value": "operations.CREATE_SERVICE.componentParameters.blockchain.bcsOrganizationType",
+                  "UIComponent": "outputText"
+                },
+                {
+                  "name": "operations.CREATE_SERVICE.componentParameters.blockchain.bcsServiceDeployMode",
+                  "value": "operations.CREATE_SERVICE.componentParameters.blockchain.bcsServiceDeployMode",
+                  "UIComponent": "outputText"
+                },
+                {
+                  "name": "operations.CREATE_SERVICE.componentParameters.blockchain.bcsPSMAuthMode",
+                  "value": "operations.CREATE_SERVICE.componentParameters.blockchain.bcsPSMAuthMode",
+                  "UIComponent": "outputText"
+                }
+              ]
+            },
+            {
+              "header": "cloudManagementSpecificConfiguration",
+              "displayName": "Blockchain Cloud Service Management Configuration",
+              "parameters": [
+                {
+                  "name": "operations.CREATE_SERVICE.componentParameters.blockchain.cloudUser",
+                  "value": "operations.CREATE_SERVICE.componentParameters.blockchain.cloudUser",
+                  "UIComponent": "outputText"
+                }
+              ]
+            },
+            {
+              "header": "bcsInstanceSpecificConfiguration",
+              "displayName": "Blockchain Cloud Peer Service References",
+              "parameters": [
+                {
+                  "name": "operations.CREATE_SERVICE.componentParameters.blockchain.cloudStackName",
+                  "value": "operations.CREATE_SERVICE.componentParameters.blockchain.cloudStackName",
+                  "UIComponent": "outputText"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "SCALE_HOSTS": {
+        "sections": {
+          "parameters": [
+            {
+              "name": "operations.SCALE_HOSTS.componentParameters.blockchain.shape",
+              "UIComponent": "selectOneChoice"
+            }
+          ]
+        }
+      },
+      "ADD_STORAGE": {
+        "visible": "${Operation.context.blockchain.componentType} == 'blockchain'",
+        "sections": {
+          "parameters": [
+            {
+              "name": "operations.ADD_STORAGE.componentParameters.blockchain.obcs",
+              "value": "operations.ADD_STORAGE.componentParameters.blockchain.obcs",
+              "UIComponent": "inputNumberSpinbox"
+            },
+            {
+              "name": "operations.ADD_STORAGE.componentParameters.blockchain.log",
+              "value": "operations.ADD_STORAGE.componentParameters.blockchain.log",
+              "UIComponent": "inputNumberSpinbox"
+            }
+          ]
+        }
+      },
+      "SCALE_OUT_SERVICE": {
+        "sections": {
+          "parameters": [
+            {
+              "name": "operations.SCALE_OUT_SERVICE.componentParameters.blockchain.adminServerCount"
+            },
+            {
+              "name": "operations.SCALE_OUT_SERVICE.componentParameters.blockchain.crcServerCount"
+            }
+          ]
+        }
+      }
+    },
+    "patchRollback": {
+      "precheck": {
+        "script": "service_scripts/python/patching/precheck.py",
+        "options": {
+          "timeout": 240,
+          "sudo": false
+        }
+      },
+      "patch": {
+        "script": "service_scripts/python/patching/patch.py",
+        "options": {
+          "timeout": 240,
+          "sudo": false
+        }
+      },
+      "rollback": {
+        "script": "service_scripts/python/patching/rollback.py",
+        "options": {
+          "timeout": 240,
+          "sudo": false
+        }
+      }
+    },
+    "securityResources": {
+      "AppIDs": [
+        {
+          "name": "OBCS_MONITOR_APPID",
+          "displayName": "OBCS MONITOR APPID",
+          "memberOf": [
+            "BCS USER"
+          ],
+          "criteria": "true",
+          "managedBy": "CUSTOMER"
+        }
+      ],
+      "Roles": [
+        {
+          "displayName": "PAAS_ADMINISTRATORS",
+          "description": "Oracle Cloud PAAS Administrators",
+          "managedBy": "PROVIDER"
+        },
+        {
+          "displayName": "ADMINISTRATOR",
+          "description": "CA administrator",
+          "isAvailableForGranting": "true",
+          "isAdminRole": true,
+          "managedBy": "CUSTOMER"
+        },
+        {
+          "displayName": "CLIENT",
+          "description": "CA client",
+          "isAvailableForGranting": "true",
+          "isAdminRole": true,
+          "managedBy": "CUSTOMER"
+        },
+        {
+          "displayName": "PEER",
+          "description": "BCS Peer service",
+          "isAvailableForGranting": "true",
+          "isAdminRole": true,
+          "managedBy": "CUSTOMER"
+        },
+        {
+          "displayName": "ORDERER",
+          "description": "BCS Orderer service",
+          "isAvailableForGranting": "true",
+          "isAdminRole": true,
+          "managedBy": "CUSTOMER"
+        },
+        {
+          "displayName": "BCS ADMINISTRATOR",
+          "description": "BCS administrator",
+          "isAvailableForGranting": "true",
+          "isAdminRole": true,
+          "managedBy": "CUSTOMER"
+        },
+        {
+          "displayName": "BCS USER",
+          "description": "BCS user",
+          "isAvailableForGranting": "true",
+          "isAdminRole": false,
+          "managedBy": "CUSTOMER"
+        },
+        {
+          "displayName": "RESTPROXY_ADMIN",
+          "description": "RESTPROXY administrator",
+          "isAvailableForGranting": "true",
+          "isAdminRole": true,
+          "managedBy": "CUSTOMER"
+        },
+        {
+          "displayName": "RESTPROXY_USER",
+          "description": "RESTPROXY user",
+          "isAvailableForGranting": "true",
+          "isAdminRole": true,
+          "managedBy": "CUSTOMER"
+        },
+        {
+          "displayName": "RESTPROXY0_ADMIN",
+          "description": "RESTPROXY0 administrator",
+          "isAvailableForGranting": "true",
+          "isAdminRole": true,
+          "managedBy": "CUSTOMER"
+        },
+        {
+          "displayName": "RESTPROXY0_USER",
+          "description": "RESTPROXY0 user",
+          "isAvailableForGranting": "true",
+          "isAdminRole": true,
+          "managedBy": "CUSTOMER"
+        },
+        {
+          "displayName": "RESTPROXY1_ADMIN",
+          "description": "RESTPROXY1 administrator",
+          "isAvailableForGranting": "true",
+          "isAdminRole": true,
+          "managedBy": "CUSTOMER"
+        },
+        {
+          "displayName": "RESTPROXY1_USER",
+          "description": "RESTPROXY1 user",
+          "isAvailableForGranting": "true",
+          "isAdminRole": true,
+          "managedBy": "CUSTOMER"
+        },
+        {
+          "displayName": "RESTPROXY2_ADMIN",
+          "description": "RESTPROXY2 administrator",
+          "isAvailableForGranting": "true",
+          "isAdminRole": true,
+          "managedBy": "CUSTOMER"
+        },
+        {
+          "displayName": "RESTPROXY2_USER",
+          "description": "RESTPROXY2 user",
+          "isAvailableForGranting": "true",
+          "isAdminRole": true,
+          "managedBy": "CUSTOMER"
+        },
+        {
+          "displayName": "RESTPROXY3_ADMIN",
+          "description": "RESTPROXY3 administrator",
+          "isAvailableForGranting": "true",
+          "isAdminRole": true,
+          "managedBy": "CUSTOMER"
+        },
+        {
+          "displayName": "RESTPROXY3_USER",
+          "description": "RESTPROXY3 user",
+          "isAvailableForGranting": "true",
+          "isAdminRole": true,
+          "managedBy": "CUSTOMER"
+        },
+        {
+          "displayName": "RESTPROXY4_ADMIN",
+          "description": "RESTPROXY4 administrator",
+          "isAvailableForGranting": "true",
+          "isAdminRole": true,
+          "managedBy": "CUSTOMER"
+        },
+        {
+          "displayName": "RESTPROXY4_USER",
+          "description": "RESTPROXY4 user",
+          "isAvailableForGranting": "true",
+          "isAdminRole": true,
+          "managedBy": "CUSTOMER"
+        }
+      ],
+      "OAuthResources": [
+        {
+          "name": "Instance_Resources",
+          "description": "exposes all application resources as OAuth Resources",
+          "accessTokenExpiry": 3600,
+          "refreshTokenExpiry": 3600,
+          "audience": "%baseURI%",
+          "scopes": [
+            {
+              "value": "/internal",
+              "description": "Internal scope",
+              "requiresConsent": false
+            },
+            {
+              "value": "/external",
+              "description": "External scope",
+              "requiresConsent": true
+            }
+          ],
+          "managedBy": "CUSTOMER"
+        }
+      ],
+      "OAuthClients": [
+        {
+          "name": "IDCS_Binding_CLIENT",
+          "description": "Binding for Cloud authenticator to authenticate against IDCS",
+          "clientType": "confidential",
+          "allowedGrants": [
+            "client_credentials",
+            "password"
+          ],
+          "idcsAppRoles": [
+            {
+              "name": "Identity Domain Administrator"
+            }
+          ],
+          "managedBy": "CUSTOMER"
+        },
+        {
+          "name": "IDCS_PAM_CLIENT",
+          "description": "Binding for PAM to authenticate against IDCS",
+          "clientType": "confidential",
+          "allowedGrants": [
+            "client_credentials",
+            "password"
+          ],
+          "idcsAppRoles": [
+            {
+              "name": "Application Administrator"
+            }
+          ],
+          "managedBy": "PROVIDER"
+        }
+      ],
+      "CloudGatePolicy": [
+        {
+          "disableAuthorize": false,
+          "allowCors": true,
+          "requireSecureCookies": true,
+          "webtierPolicy": [
+            {
+              "policyName": "ca_cg_policy",
+              "resourceFilters": [
+                {
+                  "authorize": false,
+                  "type": "text",
+                  "filter": "/",
+                  "method": "oauth"
+                },
+                {
+                  "authorize": false,
+                  "type": "text",
+                  "filter": "/cainfo",
+                  "method": "multitoken+fallthrough"
+                },
+                {
+                  "authorize": false,
+                  "type": "text",
+                  "filter": "/register",
+                  "method": "multitoken+fallthrough"
+                },
+                {
+                  "authorize": false,
+                  "type": "text",
+                  "filter": "/enroll",
+                  "method": "multitoken+fallthrough"
+                },
+                {
+                  "authorize": false,
+                  "type": "text",
+                  "filter": "/reenroll",
+                  "method": "multitoken+fallthrough"
+                },
+                {
+                  "authorize": false,
+                  "type": "text",
+                  "filter": "/revoke",
+                  "method": "multitoken+fallthrough"
+                },
+                {
+                  "authorize": false,
+                  "type": "text",
+                  "filter": "/tcert",
+                  "method": "multitoken+fallthrough"
+                },
+                {
+                  "authorize": false,
+                  "type": "regex",
+                  "filter": "/api/.*",
+                  "method": "multitoken+fallthrough"
+                },
+                {
+                  "authorize": false,
+                  "type": "text",
+                  "filter": "/join",
+                  "method": "multitoken+fallthrough"
+                },
+                {
+                  "authorize": false,
+                  "type": "text",
+                  "filter": "/token",
+                  "method": "multitoken+fallthrough"
+                }
+              ]
+            },
+            {
+              "policyName": "console_cg_policy",
+              "resourceFilters": [
+                {
+                  "authorize": false,
+                  "type": "text",
+                  "filter": "/",
+                  "method": "oauth"
+                },
+                {
+                  "authorize": false,
+                  "type": "regex",
+                  "filter": "/css/.*",
+                  "method": "public"
+                },
+                {
+                  "authorize": false,
+                  "type": "regex",
+                  "filter": "/js/.*",
+                  "method": "public"
+                },
+                {
+                  "authorize": false,
+                  "type": "regex",
+                  "filter": "/chaincodes/.*",
+                  "method": "public"
+                },
+                {
+                  "authorize": false,
+                  "type": "regex",
+                  "filter": "/img/.*",
+                  "method": "public"
+                },
+                {
+                  "authorize": false,
+                  "type": "regex",
+                  "filter": "/javascripts/.*",
+                  "method": "public"
+                },
+                {
+                  "authorize": false,
+                  "type": "regex",
+                  "filter": "/stylesheets/.*",
+                  "method": "public"
+                },
+                {
+                  "authorize": false,
+                  "type": "text",
+                  "filter": "/favicon.ico",
+                  "method": "public"
+                },
+                {
+                  "authorize": false,
+                  "type": "text",
+                  "filter": "/console/",
+                  "method": "oauth"
+                },
+                {
+                  "authorize": false,
+                  "type": "text",
+                  "filter": "/console/login.html",
+                  "method": "oauth"
+                },
+                {
+                  "authorize": false,
+                  "type": "text",
+                  "filter": "/console/index.html",
+                  "method": "oauth"
+                },
+                {
+                  "authorize": false,
+                  "type": "regex",
+                  "filter": "/console/chaincodes/.*",
+                  "method": "oauth"
+                },
+                {
+                  "authorize": false,
+                  "type": "regex",
+                  "filter": "/console/css/.*",
+                  "method": "oauth"
+                },
+                {
+                  "authorize": false,
+                  "type": "regex",
+                  "filter": "/console/img/.*",
+                  "method": "oauth"
+                },
+                {
+                  "authorize": false,
+                  "type": "regex",
+                  "filter": "/console/js/.*",
+                  "method": "oauth"
+                },
+                {
+                  "authorize": false,
+                  "type": "regex",
+                  "filter": "/console/stylesheets/.*",
+                  "method": "oauth"
+                },
+                {
+                  "authorize": false,
+                  "type": "regex",
+                  "filter": "/console/scss/.*",
+                  "method": "oauth"
+                },
+                {
+                  "authorize": false,
+                  "type": "regex",
+                  "filter": "/console/ui/.*",
+                  "method": "oauth"
+                },
+                {
+                  "type": "regex",
+                  "filter": "/console/applogout",
+                  "method": "oauth+logout",
+                  "oauthPostLogoutUrl": "https://%hostid%/console/"
+                },
+                {
+                  "authorize": false,
+                  "type": "regex",
+                  "filter": "/console/api/.*",
+                  "method": "oauth"
+                },
+                {
+                  "type": "regex",
+                  "filter": "/console/admin/.*",
+                  "method": "multitoken"
+                }
+              ]
+            },
+            {
+              "policyName": "restproxy_cg_policy",
+              "resourceFilters": [
+                {
+                  "type": "regex",
+                  "filter": "/.*",
+                  "method": "multitoken"
+                }
+              ]
+            }
+          ],
+          "managedBy": "CUSTOMER"
+        }
+      ]
+    },
+    "loadBalancerResources": {
+      "loadBalancer_bmc": {
+        "urlScope": "REGION",
+        "baseProfile": "API",
+        "connectionSettings": {
+          "idleTimeoutSecs": "600"
+        },
+        "policies": {
+          "sessionAffinity": {
+            "type": "appCookieStickinessPolicy",
+            "app_cookie_name": "${Service.serviceComponents.blockchain.attributes.cloudStackName}console_id"
+          }
+        },
+        "endPointConfiguration": {
+          "endPointType": "public",
+          "listener_2ca": {
+            "webTierPolicyName": "ca_cg_policy",
+            "originServerPoolName": "ospool_1",
+            "pathPrefixes": [
+              "/api",
+              "/cainfo",
+              "/register",
+              "/enroll",
+              "/reenroll",
+              "/revoke",
+              "/tcert",
+              "/join",
+              "/token"
+            ]
+          },
+          "listener_1console": {
+            "originServerPoolName": "ospool_3",
+            "pathPrefixes": [
+              "/",
+              "/console/",
+              "/console/login.html",
+              "/console/index.html",
+              "/console/chaincodes",
+              "/console/css",
+              "/console/img",
+              "/console/js",
+              "/console/stylesheets",
+              "/console/scss",
+              "/console/ui",
+              "/console/applogout",
+              "/console/api",
+              "/console/admin"
+            ],
+            "webTierPolicyName": "console_cg_policy",
+            "policyNames": [
+              "sessionAffinity"
+            ]
+          },
+          "listener_restproxy1": {
+            "webTierPolicyName": "restproxy_cg_policy",
+            "pathPrefixes": [
+              "/restproxy1/bcsgw"
+            ],
+            "originServerPoolName": "ospool_restproxy1"
+          },
+          "listener_restproxy2": {
+            "webTierPolicyName": "restproxy_cg_policy",
+            "pathPrefixes": [
+              "/restproxy2/bcsgw"
+            ],
+            "originServerPoolName": "ospool_restproxy2"
+          },
+          "listener_restproxy3": {
+            "webTierPolicyName": "restproxy_cg_policy",
+            "pathPrefixes": [
+              "/restproxy3/bcsgw"
+            ],
+            "originServerPoolName": "ospool_restproxy3"
+          },
+          "listener_restproxy4": {
+            "webTierPolicyName": "restproxy_cg_policy",
+            "pathPrefixes": [
+              "/restproxy4/bcsgw"
+            ],
+            "originServerPoolName": "ospool_restproxy4"
+          },
+          "originServerPools": [
+            {
+              "name": "ospool_1",
+              "healthCheck": {
+                "type": "http",
+                "path": "/ca",
+                "pathPrefixes": [
+                  "/"
+                ]
+              },
+              "originServers": [
+                {
+                  "backup": "false",
+                  "drain": "false",
+                  "offline": "false",
+                  "servers": "${Service.serviceComponents.blockchain.componentType}:8000",
+                  "weight": 3
+                }
+              ]
+            },
+            {
+              "name": "ospool_3",
+              "healthCheck": {
+                "type": "http",
+                "path": "/console/",
+                "pathPrefixes": [
+                  "/"
+                ]
+              },
+              "originServers": [
+                {
+                  "backup": "false",
+                  "drain": "false",
+                  "offline": "false",
+                  "servers": "${Service.serviceComponents.blockchain.componentType}:8200",
+                  "weight": 3
+                }
+              ]
+            },
+            {
+              "name": "ospool_restproxy1",
+              "healthCheck": {
+                "type": "http",
+                "path": "/",
+                "pathPrefixes": [
+                  "/"
+                ]
+              },
+              "originServers": [
+                {
+                  "backup": "false",
+                  "drain": "false",
+                  "offline": "false",
+                  "servers": "${Service.serviceComponents.blockchain.componentType}:8300",
+                  "weight": 3
+                }
+              ]
+            },
+            {
+              "name": "ospool_restproxy2",
+              "healthCheck": {
+                "type": "http",
+                "path": "/",
+                "pathPrefixes": [
+                  "/"
+                ]
+              },
+              "originServers": [
+                {
+                  "backup": "false",
+                  "drain": "false",
+                  "offline": "false",
+                  "servers": "${Service.serviceComponents.blockchain.componentType}:8400",
+                  "weight": 3
+                }
+              ]
+            },
+            {
+              "name": "ospool_restproxy3",
+              "healthCheck": {
+                "type": "http",
+                "path": "/",
+                "pathPrefixes": [
+                  "/"
+                ]
+              },
+              "originServers": [
+                {
+                  "backup": "false",
+                  "drain": "false",
+                  "offline": "false",
+                  "servers": "${Service.serviceComponents.blockchain.componentType}:8500",
+                  "weight": 3
+                }
+              ]
+            },
+            {
+              "name": "ospool_restproxy4",
+              "healthCheck": {
+                "type": "http",
+                "path": "/",
+                "pathPrefixes": [
+                  "/"
+                ]
+              },
+              "originServers": [
+                {
+                  "backup": "false",
+                  "drain": "false",
+                  "offline": "false",
+                  "servers": "${Service.serviceComponents.blockchain.componentType}:8600",
+                  "weight": 3
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "loadBalancer_tcp_1": {
+        "urlScope": "REGION",
+        "baseProfile": "API",
+        "scheme" : "INTERNAL",
+        "shape":"100Mbps",
+        "endPointConfiguration": {
+          "endPointType" : "management",
+          "listener_peer_0_1": {
+            "pathPrefixes" : ["/p01"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7100",
+            "originServerPoolName":"ospool_p01"
+          },
+          "listener_peer_0_2": {
+            "pathPrefixes" : ["/p02"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7101",
+            "originServerPoolName":"ospool_p02"
+          },
+          "listener_peer_1_1": {
+            "pathPrefixes" : ["/p11"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7102",
+            "originServerPoolName":"ospool_p11"
+          },
+          "listener_peer_1_2": {
+            "pathPrefixes" : ["/p12"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7103",
+            "originServerPoolName":"ospool_p12"
+          },
+          "listener_peer_2_1": {
+            "pathPrefixes" : ["/p21"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7104",
+            "originServerPoolName":"ospool_p21"
+          },
+          "listener_peer_2_2": {
+            "pathPrefixes" : ["/p22"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7105",
+            "originServerPoolName":"ospool_p22"
+          },
+          "listener_peer_3_1": {
+            "pathPrefixes" : ["/p31"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7116",
+            "originServerPoolName":"ospool_p31"
+          },
+          "listener_peer_3_2": {
+            "pathPrefixes" : ["/p32"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7117",
+            "originServerPoolName":"ospool_p32"
+          },
+          "listener_peer_4_1": {
+            "pathPrefixes" : ["/p41"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7118",
+            "originServerPoolName":"ospool_p41"
+          },
+          "listener_peer_4_2": {
+            "pathPrefixes" : ["/p42"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7119",
+            "originServerPoolName":"ospool_p42"
+          },
+          "listener_peer_5_1": {
+            "pathPrefixes" : ["/p51"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7120",
+            "originServerPoolName":"ospool_p51"
+          },
+          "listener_peer_5_2": {
+            "pathPrefixes" : ["/p52"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7121",
+            "originServerPoolName":"ospool_p52"
+          },
+          "listener_peer_6_1": {
+            "pathPrefixes" : ["/p61"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7106",
+            "originServerPoolName":"ospool_p61"
+          },
+          "listener_peer_6_2": {
+            "pathPrefixes" : ["/p62"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7107",
+            "originServerPoolName":"ospool_p62"
+          },
+          "listener_orderer_0_1": {
+            "pathPrefixes" : ["/o1"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7301",
+            "originServerPoolName":"ospool_o1"
+          },
+          "listener_orderer_0_2": {
+            "pathPrefixes" : ["/o2"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7302",
+            "originServerPoolName":"ospool_o2"
+          },
+          "originServerPools":[
+            {
+              "name":"ospool_p01",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7100"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p02",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7101"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p11",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7102"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p12",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7103"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p21",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7104"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p22",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7105"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p31",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7116"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p32",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7117"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p41",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7118"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p42",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7119"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p51",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7120"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p52",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7121"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p61",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7106"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p62",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7107"
+                }
+              ]
+            },
+            {
+              "name":"ospool_o1",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7301"
+                }
+              ]
+            },
+            {
+              "name":"ospool_o2",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7302"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "loadBalancer_tcp_2": {
+        "urlScope": "REGION",
+        "baseProfile": "API",
+        "scheme" : "INTERNAL",
+        "shape":"100Mbps",
+        "endPointConfiguration": {
+          "endPointType" : "private",
+          "listener_peer_7_1": {
+            "pathPrefixes" : ["/p71"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7108",
+            "originServerPoolName":"ospool_p71"
+          },
+          "listener_peer_7_2": {
+            "pathPrefixes" : ["/p72"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7109",
+            "originServerPoolName":"ospool_p72"
+          },
+          "listener_peer_8_1": {
+            "pathPrefixes" : ["/p81"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7110",
+            "originServerPoolName":"ospool_p81"
+          },
+          "listener_peer_8_2": {
+            "pathPrefixes" : ["/p82"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7111",
+            "originServerPoolName":"ospool_p82"
+          },
+          "listener_peer_9_1": {
+            "pathPrefixes" : ["/p91"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7122",
+            "originServerPoolName":"ospool_p91"
+          },
+          "listener_peer_9_2": {
+            "pathPrefixes" : ["/p92"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7123",
+            "originServerPoolName":"ospool_p92"
+          },
+          "listener_peer_10_1": {
+            "pathPrefixes" : ["/p101"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7124",
+            "originServerPoolName":"ospool_p101"
+          },
+          "listener_peer_10_2": {
+            "pathPrefixes" : ["/p102"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7125",
+            "originServerPoolName":"ospool_p102"
+          },
+          "listener_peer_11_1": {
+            "pathPrefixes" : ["/p111"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7126",
+            "originServerPoolName":"ospool_p111"
+          },
+          "listener_peer_11_2": {
+            "pathPrefixes" : ["/p112"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7127",
+            "originServerPoolName":"ospool_p112"
+          },
+          "listener_peer_12_1": {
+            "pathPrefixes" : ["/p121"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7128",
+            "originServerPoolName":"ospool_p121"
+          },
+          "listener_peer_12_2": {
+            "pathPrefixes" : ["/p122"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7129",
+            "originServerPoolName":"ospool_p122"
+          },
+          "listener_peer_13_1": {
+            "pathPrefixes" : ["/p131"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7112",
+            "originServerPoolName":"ospool_p131"
+          },
+          "listener_peer_13_2": {
+            "pathPrefixes" : ["/p132"],
+            "balancerProtocol" : "SSL",
+            "balancerPort" : "7113",
+            "originServerPoolName":"ospool_p132"
+          },
+          "originServerPools":[
+            {
+              "name":"ospool_p71",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7108"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p72",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7109"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p81",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7110"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p82",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7111"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p91",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7122"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p92",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7123"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p101",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7124"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p102",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7125"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p111",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7126"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p112",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7127"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p121",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7128"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p122",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7129"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p131",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7112"
+                }
+              ]
+            },
+            {
+              "name":"ospool_p132",
+              "healthCheck":{
+                "type":"TCP"
+              },
+              "originServers":[
+                {
+                  "servers":"${Service.serviceComponents.blockchain.componentType}:7113"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "loadBalancer_ocic": {
+        "urlScope": "REGION",
+        "baseProfile": "API",
+        "connectionSettings": {
+          "idleTimeoutSecs": "600"
+        },
+        "policies": {
+          "sessionAffinity": {
+            "type": "appCookieStickinessPolicy",
+            "app_cookie_name": "${Service.serviceComponents.blockchain.attributes.cloudStackName}console_id"
+          }
+        },
+        "endPointConfiguration": {
+          "endPointType": "public",
+          "listener_1console": {
+            "originServerPoolName": "ospool_console",
+            "pathPrefixes": [
+              "/console/",
+              "/console/login.html",
+              "/console/index.html",
+              "/console/chaincodes",
+              "/console/css",
+              "/console/img",
+              "/console/js",
+              "/console/stylesheets",
+              "/console/scss",
+              "/console/ui",
+              "/console/applogout",
+              "/console/api",
+              "/console/admin"
+            ],
+            "webTierPolicyName": "console_cg_policy",
+            "policyNames": [
+              "sessionAffinity"
+            ]
+          },
+          "listener_2ca": {
+            "webTierPolicyName": "ca_cg_policy",
+            "originServerPoolName": "ospool_ca",
+            "pathPrefixes": [
+              "/cainfo",
+              "/register",
+              "/enroll",
+              "/reenroll",
+              "/revoke",
+              "/tcert",
+              "/api",
+              "/join",
+              "/token"
+            ]
+          },
+          "listener_restproxy1": {
+            "webTierPolicyName": "restproxy_cg_policy",
+            "pathPrefixes": [
+              "/restproxy1/bcsgw"
+            ],
+            "originServerPoolName": "ospool_restproxy1"
+          },
+          "listener_restproxy2": {
+            "webTierPolicyName": "restproxy_cg_policy",
+            "pathPrefixes": [
+              "/restproxy2/bcsgw"
+            ],
+            "originServerPoolName": "ospool_restproxy2"
+          },
+          "listener_restproxy3": {
+            "webTierPolicyName": "restproxy_cg_policy",
+            "pathPrefixes": [
+              "/restproxy3/bcsgw"
+            ],
+            "originServerPoolName": "ospool_restproxy3"
+          },
+          "listener_restproxy4": {
+            "webTierPolicyName": "restproxy_cg_policy",
+            "pathPrefixes": [
+              "/restproxy4/bcsgw"
+            ],
+            "originServerPoolName": "ospool_restproxy4"
+          },
+          "originServerPools": [
+            {
+              "name": "ospool_ca",
+              "healthCheck": {
+                "type": "http"
+              },
+              "originServers": [
+                {
+                  "backup": "false",
+                  "drain": "false",
+                  "offline": "false",
+                  "servers": "${Service.serviceComponents.blockchain.componentType}:8000",
+                  "weight": 3
+                }
+              ]
+            },
+            {
+              "name": "ospool_console",
+              "healthCheck": {
+                "type": "http",
+                "healthCheckIntervalSecs": 60,
+                "healthCheckTimeoutSecs": 59
+              },
+              "originServers": [
+                {
+                  "backup": "false",
+                  "drain": "false",
+                  "offline": "false",
+                  "servers": "${Service.serviceComponents.blockchain.componentType}:8200",
+                  "weight": 3
+                }
+              ]
+            },
+            {
+              "name": "ospool_restproxy1",
+              "healthCheck": {
+                "type": "http",
+                "healthCheckIntervalSecs": 60,
+                "healthCheckTimeoutSecs": 59
+              },
+              "originServers": [
+                {
+                  "backup": "false",
+                  "drain": "false",
+                  "offline": "false",
+                  "servers": "${Service.serviceComponents.blockchain.componentType}:8300",
+                  "weight": 3
+                }
+              ]
+            },
+            {
+              "name": "ospool_restproxy2",
+              "healthCheck": {
+                "type": "http",
+                "healthCheckIntervalSecs": 60,
+                "healthCheckTimeoutSecs": 59
+              },
+              "originServers": [
+                {
+                  "backup": "false",
+                  "drain": "false",
+                  "offline": "false",
+                  "servers": "${Service.serviceComponents.blockchain.componentType}:8400",
+                  "weight": 3
+                }
+              ]
+            },
+            {
+              "name": "ospool_restproxy3",
+              "healthCheck": {
+                "type": "http",
+                "healthCheckIntervalSecs": 60,
+                "healthCheckTimeoutSecs": 59
+              },
+              "originServers": [
+                {
+                  "backup": "false",
+                  "drain": "false",
+                  "offline": "false",
+                  "servers": "${Service.serviceComponents.blockchain.componentType}:8500",
+                  "weight": 3
+                }
+              ]
+            },
+            {
+              "name": "ospool_restproxy4",
+              "healthCheck": {
+                "type": "http",
+                "healthCheckIntervalSecs": 60,
+                "healthCheckTimeoutSecs": 59
+              },
+              "originServers": [
+                {
+                  "backup": "false",
+                  "drain": "false",
+                  "offline": "false",
+                  "servers": "${Service.serviceComponents.blockchain.componentType}:8600",
+                  "weight": 3
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "meteringResources": {
+      "OBCS_EE_PAAS_ANY_TRANSACTIONS_HOUR": {
+        "serviceAttributes": {},
+        "edition": "ANY",
+        "level": "ANY",
+        "ocpuType": "ANY",
+        "meteringFrequency": "ANY",
+        "manage": true
+      }
+    }
+  }
+  
