@@ -14,11 +14,11 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"net/http"
 	"strings"
-	"bytes"
 )
 
 const (
@@ -35,7 +35,7 @@ const (
 	anError    = `<p class="error">%s</p>`
 )
 
-var letterToDigital = []rune{0, 1, 2, 3, 0, 1, 2, 0, 0, 2, 2, 4, 5, 5, 0, 1, 2, 6, 2, 3, 0, 0, 0, 2 ,0, 2}
+var letterToDigital = []rune{0, 1, 2, 3, 0, 1, 2, 0, 0, 2, 2, 4, 5, 5, 0, 1, 2, 6, 2, 3, 0, 0, 0, 2, 0, 2}
 
 type soundex struct {
 	word     string
@@ -63,7 +63,7 @@ func homePage(writer http.ResponseWriter, request *http.Request) {
 		if words, ok := processRequest(request); ok {
 			wordsMap := getSoundex(words)
 			fmt.Fprint(writer, formatSoundex(wordsMap))
-		} 
+		}
 	}
 	fmt.Fprint(writer, pageBottom)
 }
@@ -82,19 +82,23 @@ func processRequest(request *http.Request) ([]string, bool) {
 }
 
 func formatSoundex(wordsMap map[string]string) string {
-	return fmt.Sprintf(`<table border="1">
-	<tr><th colspan="2">Results</th></tr>
-	<tr><td>Numbers</td><td>%v</td></tr>
-	<tr><td>Count</td><td>%d</td></tr>
-	<tr><td>Mean</td><td>%f</td></tr>
-	<tr><td>Median</td><td>%f</td></tr>
-	<tr><td>Mode</td><td>%v</td></tr>
-	<tr><td>Std.Dev</td><td>%f</td></tr>
-	</table>`, stats.numbers, len(stats.numbers), stats.mean, stats.median, stats.mode, stats.dev)
+	var buffer bytes.Buffer
+	buffer.WriteString(`<table border="1">
+	<tr><th>Name</th><th>Soundex</th></tr>`)
+	for key, value := range wordsMap {
+		buffer.WriteString(fmt.Sprintf(`<tr><td>%s</td><td>%s</td></tr>`, key, value))
+	}
+	buffer.WriteString(`</table>`)
+
+	return buffer.String()
 }
 
 func getSoundex(words []string) (wordsMap map[string]string) {
-
+	wordsMap = make(map[string]string)
+	for _, word := range words {
+		wordsMap[word] = getWordSoundex(word)
+	}
+	return
 }
 
 func getWordSoundex(word string) (soundex string) {
@@ -102,16 +106,16 @@ func getWordSoundex(word string) (soundex string) {
 		return ""
 	}
 	var buffer bytes.Buffer
-	var index = 0
-	buffer.WriteString(strings.ToLower(string(word[0])))
-	var preChs = make(map[rune]int8)//hash is better? maybe
+	buffer.WriteString(strings.ToUpper(string(word[0])))
+	var preChs = make(map[rune]int8) //hash is better? maybe
 	//Add first ch
 	preChs[rune(word[0])] = 1
-	for _,ch := range word[1:] {
-		if _,found := preChs[ch]; found{
+	for _, ch := range strings.ToLower(word[1:]) {
+		if _, found := preChs[ch]; found {
 			continue
 		} else {
-			buffer.WriteRune(letterToDigital[ch - 'A'])
+			fmt.Println(ch - 'a')
+			buffer.WriteRune(letterToDigital[ch-'a'])
 			preChs[ch] = 1
 		}
 	}
@@ -119,14 +123,13 @@ func getWordSoundex(word string) (soundex string) {
 	soundex = buffer.String()
 	buffer.Reset()
 
-	for _,ch := range soundex {
+	for _, ch := range soundex {
 		if (ch - '0') == 0 {
 			continue
 		}
 		buffer.WriteRune(ch)
 	}
-	soundex = fmt.Sprintf("%-05")
+	//Format the code
+	soundex = fmt.Sprintf("%-05s", buffer.String())
+	return
 }
-
-
-
