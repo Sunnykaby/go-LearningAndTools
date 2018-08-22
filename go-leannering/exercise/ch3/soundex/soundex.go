@@ -16,6 +16,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -50,8 +51,15 @@ func main() {
 	}
 }
 
-func testPage(write http.ResponseWriter, request *http.Request) {
+func testPage(writer http.ResponseWriter, request *http.Request) {
+	fmt.Fprint(writer, pageTop)
+	dest, cases, err := doTest()
+	if err != nil {
+		fmt.Fprintf(writer, anError, err)
+	}
+	fmt.Fprint(writer, formatSoundexTest(cases, dest))
 
+	fmt.Fprint(writer, pageBottom)
 }
 
 func homePage(writer http.ResponseWriter, request *http.Request) {
@@ -101,35 +109,63 @@ func getSoundex(words []string) (wordsMap map[string]string) {
 	return
 }
 
-func getWordSoundex(word string) (soundex string) {
+func getWordSoundex(word string) string {
 	if len(word) == 0 {
 		return ""
 	}
-	var buffer bytes.Buffer
-	buffer.WriteString(strings.ToUpper(string(word[0])))
-	var preChs = make(map[rune]int8) //hash is better? maybe
-	//Add first ch
-	preChs[rune(word[0])] = 1
-	for _, ch := range strings.ToLower(word[1:]) {
-		if _, found := preChs[ch]; found {
-			continue
-		} else {
-			fmt.Println(ch - 'a')
-			buffer.WriteRune(letterToDigital[ch-'a'])
-			preChs[ch] = 1
-		}
-	}
-	//Rm the 0
-	soundex = buffer.String()
-	buffer.Reset()
+	//change string to runes
+	wordChs := []rune(strings.ToUpper(word))
+	//create a new [] to store the new codes
+	var codes []rune
 
-	for _, ch := range soundex {
-		if (ch - '0') == 0 {
+	codes = append(codes, wordChs[0])
+	ch := wordChs[0]
+
+	for _, key := range wordChs[1:] {
+		if index := key - 'A'; index > 0 &&
+			index < int32(len(letterToDigital)) &&
+			letterToDigital[index] != 0 &&
+			key != ch {
+			codes = append(codes, '0'+letterToDigital[index]) // wonderful, add a index to '0'
+		}
+		ch = key
+	}
+	for len(codes) < 4 {
+
+		codes = append(codes, '0')
+	}
+	return string(codes[:4])
+}
+
+func doTest() (map[string]string, map[string]string, error) {
+	testData, err := ioutil.ReadFile("soundex-test-data.txt")
+	if err != nil {
+		return nil, nil, err
+	}
+	testDestMap := make(map[string]string)
+	var testCases []string
+
+	for _, line := range strings.Split(string(testData), "\n") {
+		pair := strings.Fields(line)
+		if len(pair) == 0 {
 			continue
 		}
-		buffer.WriteRune(ch)
+		testDestMap[pair[1]] = pair[0]
+		testCases = append(testCases, pair[1])
 	}
-	//Format the code
-	soundex = fmt.Sprintf("%-05s", buffer.String())
-	return
+
+	testCalMap := getSoundex(testCases)
+	return testDestMap, testCalMap, nil
+}
+
+func formatSoundexTest(wordsMap map[string]string, testMap map[string]string) string {
+	var buffer bytes.Buffer
+	buffer.WriteString(`<table border="1">
+	<tr><th>Name</th><th>Soundex</th><th>Test Case</th></tr>`)
+	for key, value := range wordsMap {
+		buffer.WriteString(fmt.Sprintf(`<tr><td>%s</td><td>%s</td><td>%s</td></tr>`, key, value, testMap[key]))
+	}
+	buffer.WriteString(`</table>`)
+
+	return buffer.String()
 }
