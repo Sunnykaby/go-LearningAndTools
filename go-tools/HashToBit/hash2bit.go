@@ -59,9 +59,10 @@ func generateBitsWithString(src string) (bitStr string) {
 		return bitStr
 	}
 
-	for index, ch := src {
-		
-	}
+	// for index, ch := src {
+
+	// }
+	return bitStr
 }
 
 func main() {
